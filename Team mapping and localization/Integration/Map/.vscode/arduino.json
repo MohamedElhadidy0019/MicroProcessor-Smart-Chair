@@ -1,5 +1,6 @@
 {
-    "board": "arduino:avr:uno",
-    "sketch": "Test.ino",
-    "output": ".\\bin"
+    "board": "arduino:avr:mega",
+    "sketch": "Map.ino",
+    "output": ".\\bin",
+    "configuration": "cpu=atmega2560"
 }

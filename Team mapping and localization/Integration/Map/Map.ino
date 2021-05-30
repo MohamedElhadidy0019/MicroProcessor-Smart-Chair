@@ -6,7 +6,6 @@
 const byte TrigerPins [3] = {10,11,12};              /* index --> 0 : front, 1 :right, 2 : left */
 const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
 byte current_sensor = 0;
-unsigned long previousTime = 0;
 float distance;
 float duration;
 
@@ -45,8 +44,7 @@ void setup()
 
 void loop()
 {
-  /* setting the trigger of the current sensor : low */
-  digitalWrite(TrigerPins[current_sensor], LOW);
+  
   Read_ultrasonic();
   Read_swithces();
   
@@ -125,25 +123,23 @@ void calculate_Distance(int duration, int sensor_num)
 /* handle the readings from the 3 sensors simultaneously */
 void Read_ultrasonic()
 {
-  
-  if((unsigned long)(micros() - previousTime) > 2)
-  {
-    digitalWrite(TrigerPins[current_sensor], HIGH);
-    previousTime = micros();
-  }
-  else if ((unsigned long)(micros() - previousTime) > 10)
-  {
-    
-    duration = pulseIn(echos[current_sensor], HIGH);
-    calculate_Distance(duration, current_sensor);
-    Serial.print("Distance is =");
-    Serial.println(distance);
-    digitalWrite(TrigerPins[current_sensor], LOW);
+  /* setting the trigger of the current sensor : low */
+  digitalWrite(TrigerPins[current_sensor], LOW);
+   
+  delayMicroseconds(2);
 
-    current_sensor = (current_sensor == 2)? 0 : current_sensor + 1;
-    previousTime = micros();
-  }
+  digitalWrite(TrigerPins[current_sensor], HIGH);
+  delayMicroseconds(10); 
   
+  duration = pulseIn(echos[current_sensor], HIGH);
+  calculate_Distance(duration, current_sensor);
+  Serial.print("Distance is =");
+  Serial.println(distance);
+  
+  digitalWrite(TrigerPins[current_sensor], LOW);
+  current_sensor = (current_sensor == 2)? 0 : current_sensor + 1;
+  
+
 }
 
 /* act as the control part */
@@ -156,16 +152,16 @@ void Read_swithces()
       ;
     delay(10);
     // curretn (x,y) location of the chair
-    x_position = x_position + DISTANCE_PER_MOVE * sin(front_angle);
-    y_position = y_position + DISTANCE_PER_MOVE * cos(front_angle);
+    x_position = x_position + DISTANCE_PER_MOVE * sin(current_angle);
+    y_position = y_position + DISTANCE_PER_MOVE * cos(current_angle);
   }
   if (digitalRead(Switch_back))
   {
     while (digitalRead(Switch_back))
       ;
     delay(10);
-    x_position = x_position - DISTANCE_PER_MOVE * sin(front_angle);
-    y_position = y_position - DISTANCE_PER_MOVE * cos(front_angle);
+    x_position = x_position - DISTANCE_PER_MOVE * sin(current_angle);
+    y_position = y_position - DISTANCE_PER_MOVE * cos(current_angle);
   }
   if (digitalRead(Switch_left)) //rotate anti-clock wise
   {
