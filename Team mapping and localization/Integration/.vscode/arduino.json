@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:mega",
+    "sketch": "Map\\Map.ino",
+    "configuration": "cpu=atmega2560"
+}

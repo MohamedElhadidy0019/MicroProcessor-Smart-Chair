@@ -1,29 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include<stdint.h>
-
-/* Sensors data : */
-const byte TrigerPins [3] = {10,11,12};              /* index --> 0 : front, 1 :right, 2 : left */
-const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
-byte current_sensor = 0;
-float distance;
-float duration;
-
-/* Map :*/
-#define MAP_MAX_X 100
-#define MAP_MAX_Y 150
-uint8_t Map[1875];                                   /* 100bit*150bit == 100cm*150cm
-                                                        x is width : MAP_MAX_X   
-                                                        y is height: MAP_MAY_Y   
-                                                        we access the array by coordinated(x,y)*/
-                                                                                            
-/* Robot position : */
-#define DISTANCE_PER_MOVE 5
-int x_position = 0;
-int y_position = 0;
-double current_angle = 0;                      
-
-/* Motor */ 
 // ---------------- define pins -----------------
 #define enA 10
 #define in1 7
@@ -45,7 +19,6 @@ double current_angle = 0;
 #define ROW 20
 #define COL 20
 #define oo 250
-
 // ---------------- array of directions  -----------------
 char s [200] = "" ;
 int orientation = 1 ;
@@ -57,84 +30,17 @@ typedef struct node {
   //  4 free  2parent   10 x & y
   struct node* next;
 } Node;
-
-/* to transform the distance into x , y (for the map indexing) position based on the sensor number */
-void Transform(int dist, int sensorNumber)
-{
-    int x , y ;
-    if (dist != -1)
-    { switch (sensorNumber)
-      {
-      case 0:     /* front */
-        x = x_position + dist * sin(current_angle);
-        y = y_position + dist * cos (current_angle);
-        break;
-
-      case 1:     /* right */
-        x = x_position + dist * cos(current_angle);
-        y = y_position + dist * sin(current_angle * -1 );
-        break;
-
-      case 2:     /* left */
-      
-        x = x_position - dist * cos(current_angle);
-        y = y_position + dist * sin(current_angle);
-        break;
-      }
-      /* if x or y are < 0 , then point is out of the rang of the map */
-      if( ! (x < 0 || y < 0 ))  write_Map(Map,x,y,1);
-     
-    }
-    return;
-  }
-
-/* convert the duration from the sensor -- > distance */
-void calculate_Distance(int duration, int sensor_num)
-{
-  /*0.343 is the speed of the sound , dividing by 2 because this duration is for goes and return.*/
-  distance = (duration * .0343) / 2.0; 
-  if (distance > 100)
-  {
-    distance = -1; //readiung out of range
-  }
-  Transform((int)(distance/5), sensor_num);
-}
-
-/* handle the readings from the 3 sensors simultaneously */
-void Read_ultrasonic()
-{
-  /* setting the trigger of the current sensor : low */
-  digitalWrite(TrigerPins[current_sensor], LOW);
-   
-  delayMicroseconds(2);
-
-  digitalWrite(TrigerPins[current_sensor], HIGH);
-  delayMicroseconds(10); 
-  
-  duration = pulseIn(echos[current_sensor], HIGH);
-  calculate_Distance(duration, current_sensor);
-  Serial.print("Distance is =");
-  Serial.println(distance);
-  
-  digitalWrite(TrigerPins[current_sensor], LOW);
-  current_sensor = (current_sensor == 2)? 0 : current_sensor + 1;
-  
-
-}
-
-/* ------------------- Deal with bits of node -----------------*/
+// ------------------- Deal with bits of node -----------------
 int getx(struct node n) {
   uint16_t x = n.xy & 0b0000001111111111;
   x = x / COL;
   return x;
 }
-
 int gety(struct node n) {
   uint16_t y = n.xy & 0b0000001111111111;
   y = y % COL;
   return y;
 }
-
 int get_x_parent(struct node n){
   int old_x = getx(n);
 
@@ -153,7 +59,6 @@ int get_x_parent(struct node n){
     return old_x + 1;
   }
 }
-
 int get_y_parent(struct node n) {
   int old_y = gety(n);
 
@@ -174,18 +79,17 @@ int get_y_parent(struct node n) {
     return old_y;
   }
 }
-
 void set_xy(struct node* n, int x, int y) {
   n->xy = n->xy & 0b1111110000000000;
   n->xy = (x * COL + y) | n->xy;
 }
-
 void set_xyp(struct node* n, int diff) {
 
   diff = diff << 10;
   n->xy = n->xy & 0b1111001111111111;
   n->xy = n->xy | diff;
 }
+
 
 // ------------------- Deal with Bit array  -----------------
 uint8_t read_Map(uint8_t* map, uint8_t index_y, uint8_t index_x) //function takes (x,y) and return the value of the bit wether it is 1 or 0
@@ -198,7 +102,6 @@ uint8_t read_Map(uint8_t* map, uint8_t index_y, uint8_t index_x) //function take
   uint8_t shiftIndex = index % 8;
   return((map[bigIndex] >> shiftIndex) & 0x01);
 }
-
 void write_Map(uint8_t* map, uint8_t index_y, uint8_t index_x, uint8_t state)  // (x_position, y_postion, state to set the bit or clear it)
 {
   //index_x = MAP_MAX_X - index_x;
@@ -217,6 +120,25 @@ void write_Map(uint8_t* map, uint8_t index_y, uint8_t index_x, uint8_t state)  /
 
 }
 
+void aStarSearch(uint8_t* map, struct node src, struct node dest); // implemenation is below
+void setup()
+{
+    Serial.begin(9600);
+// ---------------motor pins--------------
+    pinMode(enA, OUTPUT);
+    pinMode(enB, OUTPUT);
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+    pinMode(in3, OUTPUT);
+    pinMode(in4, OUTPUT);
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    digitalWrite(in3, LOW);
+    digitalWrite(in4, LOW);
+    analogWrite(enA, 0);
+    analogWrite(enB, 0);
+// --------------------------------------
+}
 
 void forward_5cm()
 {
@@ -282,6 +204,198 @@ void ninety_degrees_right()
 }
 
 bool x =1 ;
+void loop()
+{    
+    if(x ==1 ) {
+      //Serial.println("st loop ");
+
+      //-------------------Write the map ----------------------------------
+      uint8_t Map[(int)(ROW * COL / 8) + 5];
+      // 1 --> free & 0 --> block 
+      for (int i = 0; i < ROW; i++)
+      {
+        for (int j = 0; j < COL; j++)
+        {
+          write_Map(Map, i, j, 1);
+        }
+      }
+      //Serial.println("end writing to map");
+      write_Map(Map, 4, 3, 0);
+      write_Map(Map, 1, 1, 0);
+      write_Map(Map, 3, 3, 0);
+      write_Map(Map, 2, 3, 0);
+      write_Map(Map, 2, 4, 0);
+      write_Map(Map, 2, 5, 0);
+      write_Map(Map, 2, 6, 0);
+      write_Map(Map, 3, 6, 0);
+      write_Map(Map, 4, 6, 0);
+      write_Map(Map, 9, 0, 0);
+    // ---------------------- Run  the algorithm  -----------------------
+      //Serial.println("define nodes ");
+      Node src, dest;
+      set_xy(&src, 0, 0); 
+      set_xy(&dest, 10 , 6);
+      Serial.print("Src --> \t"); Serial.print(getx(src)); 
+      Serial.print("   ,   "); Serial.print(gety(src)); 
+      Serial.print("\n");
+      Serial.print("Dest--> \t"); Serial.print(getx(dest)); 
+      Serial.print("   ,   "); Serial.print(gety(dest)); 
+      Serial.print("\n");
+
+      
+      aStarSearch(Map, src, dest);
+      // ---------------------- Print the path -----------------------
+      Serial.print("The path is -->  ");
+      for(int i=0 ; i < strlen(s) ; i++ ) {
+        Serial.print(s[i]);  
+      }
+      x=0;
+      Serial.println("\nDone \n" );
+    }
+    else {
+     x=0;
+    }
+    
+    for(i =0 ; i<strlen(s) ; i++)
+    {
+     if(s[i] == 'U')
+     {
+                  if(orientation == 0)
+                  {
+                    delay(2000);
+                    ninety_degrees_left();
+                    delay(2000);
+                    forward_5cm(); 
+                  }      
+                  else if (orientation == 1)
+                  {
+                    delay(2000);
+                    forward_5cm();         
+                  }
+                  else if (orientation == 2)
+                  {
+                    delay(2000);
+                    ninety_degrees_right();
+                    delay(2000);
+                    forward_5cm();        
+                  }
+                  else 
+                  {
+                    delay(2000);
+                    ninety_degrees_right();
+                    delay(2000);
+                    ninety_degrees_right();
+                    delay(2000);
+                    forward_5cm();        
+                  }
+                 orientation = 1 ;
+     }
+     else if (s[i] == 'R')
+     {
+                
+                if(orientation == 0)
+                {        
+                  delay(2000);
+                  forward_5cm(); 
+                }      
+                else if (orientation == 1)
+                {
+                  delay(2000);
+                  ninety_degrees_right();
+                  delay(2000);
+                  forward_5cm();         
+                }
+                else if (orientation == 2)
+                {
+                  delay(2000);
+                  ninety_degrees_right();
+                  delay(2000);
+                  ninety_degrees_right();
+                  delay(2000);
+                  forward_5cm();        
+                }
+                else 
+                {        
+                  ninety_degrees_left();
+                  delay(2000);
+                  forward_5cm();        
+                }
+               orientation = 0 ;
+     }
+     else if (s[i] == 'D')
+     {
+      
+
+              if(orientation == 0)
+              {
+                delay(2000);
+                ninety_degrees_right();        
+                delay(2000);
+                forward_5cm(); 
+              }      
+              else if (orientation == 1)
+              {
+                delay(2000);
+                ninety_degrees_right();
+                delay(2000);
+                ninety_degrees_right();
+                delay(2000);
+                forward_5cm();         
+              }
+              else if (orientation == 2)
+              {
+                delay(2000);
+                ninety_degrees_left();
+                delay(2000);
+                forward_5cm();        
+              }
+              else 
+              {               
+                delay(2000);
+                forward_5cm();        
+              }
+             orientation = 3 ;
+                    
+     }
+     else if (s[i] == 'L')
+     {
+
+              if(orientation == 0)
+              {
+                delay(2000);
+                ninety_degrees_right();
+                delay(2000);
+                ninety_degrees_right();
+                delay(2000);
+                forward_5cm(); 
+              }      
+              else if (orientation == 1)
+              {
+                delay(2000);
+                ninety_degrees_left();       
+                delay(2000);
+                forward_5cm();  
+              }
+              else if (orientation == 2)
+              {                    
+                delay(2000);
+                forward_5cm();        
+              }
+              else 
+              {               
+                delay(2000);
+                ninety_degrees_right();
+                delay(2000);
+                forward_5cm();        
+              }
+              orientation = 2 ;
+     
+     }
+     
+    }
+  
+}
+
 
 // ------------------- Stack Data structure -----------------
 const int MAX_SIZE = 90;
@@ -295,7 +409,6 @@ bool isEmpty_s()
   else
     return false;
 }
-
 bool isFull()
 {
   if (top == MAX_SIZE)
@@ -303,7 +416,6 @@ bool isFull()
   else
     return false;
 }
-
 bool peek_s(struct node* num)
 {
   if (!isEmpty_s())
@@ -315,7 +427,6 @@ bool peek_s(struct node* num)
     return false;
 
 }
-
 bool pop_s(struct node* num) {
 
   if (!isEmpty_s()) {
@@ -328,7 +439,6 @@ bool pop_s(struct node* num) {
   else
     return false;
 }
-
 bool push_s(struct node num)
 {
   if (!isFull())
@@ -351,13 +461,11 @@ Node* newNode(uint16_t data, uint8_t priority) {
 
   return temp;
 }
-
 void pop(Node** head) {
   Node* temp = *head;
   (*head) = (*head)->next;
   free(temp);
 }
-
 void push(Node** head, uint16_t data, uint8_t priority) {
   Node* start = (*head);
 
@@ -390,40 +498,35 @@ void push(Node** head, uint16_t data, uint8_t priority) {
     start->next = temp;
   }
 }
-
 Node* peek(Node** head) {
   return (*head);
 }
-
 int isEmpty(Node** head)
 {
   return (*head) == NULL;
 }
+
 
 // ------------------- Helping functions to A star algorithm  -----------------
 int isValid(int row, int col) {
   return (row >= 0) && (row < ROW) && (col >= 0)
     && (col < COL);
 }
-
 int compare(struct node  node1, struct node node2)
 {
   if (node1.weight > node2.weight)
     return 1;
   return 0;
 }
-
 int isUnBlocked(uint8_t* map, int row, int col) { //  1 unblocked & 0 blocked
   return read_Map(map, row, col);
 }
-
 int isDestination(int row, int col, struct node dest) {
   if (row == getx(dest) && col == gety(dest))
     return (1);
   else
     return (0);
 }
-
 int calculateHValue(int row, int col, struct node dest) {
   //return round(sqrt(pow(row - getx(dest), 2) + pow(col - gety(dest), 2)));
   return abs(row - getx(dest)) + abs(col - gety(dest));
@@ -499,7 +602,6 @@ void tracePath(struct node cellDetails[][COL], Node dest, Node src) {
   //Serial.print("\n");
   return;
 }
-
 void aStarSearch(uint8_t* map, struct node src, struct node dest) {
   // If the source is out of range
   if (isValid(getx(src), gety(src)) == 0 ||
@@ -699,226 +801,3 @@ void aStarSearch(uint8_t* map, struct node src, struct node dest) {
 
   return;
 }
-
-void setup()
-{
-  Serial.begin(9600);
-  for(byte i = 0 ; i<3 ; i++) {pinMode(TrigerPins[i], INPUT);}
-  for(byte i = 0 ; i<3 ; i++) {pinMode(echos[i], INPUT);}
-  
-
-// ---------------motor pins--------------
-  pinMode(enA, OUTPUT);
-  pinMode(enB, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(in3, OUTPUT);
-  pinMode(in4, OUTPUT);
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, LOW);
-  analogWrite(enA, 0);
-  analogWrite(enB, 0);
-  
-}
-
-void loop()
-{    
-    Read_ultrasonic();
-    if(x ==1 ) 
-    {
-      //Serial.println("st loop ");
-
-      //-------------------Write the map ----------------------------------
-      uint8_t Map[(int)(ROW * COL / 8) + 5];
-      // 1 --> free & 0 --> block 
-      for (int i = 0; i < ROW; i++)
-      {
-        for (int j = 0; j < COL; j++)
-        {
-          write_Map(Map, i, j, 1);
-        }
-      }
-      //Serial.println("end writing to map");
-      write_Map(Map, 4, 3, 0);
-      write_Map(Map, 1, 1, 0);
-      write_Map(Map, 3, 3, 0);
-      write_Map(Map, 2, 3, 0);
-      write_Map(Map, 2, 4, 0);
-      write_Map(Map, 2, 5, 0);
-      write_Map(Map, 2, 6, 0);
-      write_Map(Map, 3, 6, 0);
-      write_Map(Map, 4, 6, 0);
-      write_Map(Map, 9, 0, 0);
- 
-    // ---------------------- Run  the algorithm  -----------------------
-      //Serial.println("define nodes ");
-      Node src, dest;
-      set_xy(&src, 0, 0); 
-      set_xy(&dest, 10 , 6);
-      Serial.print("Src --> \t"); Serial.print(getx(src)); 
-      Serial.print("   ,   "); Serial.print(gety(src)); 
-      Serial.print("\n");
-      Serial.print("Dest--> \t"); Serial.print(getx(dest)); 
-      Serial.print("   ,   "); Serial.print(gety(dest)); 
-      Serial.print("\n");
-
-      
-      aStarSearch(Map, src, dest);
-      // ---------------------- Print the path -----------------------
-      Serial.print("The path is -->  ");
-      for(int i=0 ; i < strlen(s) ; i++ ) {
-        Serial.print(s[i]);  
-      }
-      x=0;
-      Serial.println("\nDone \n" );
-    }
-    else {
-     x=0;
-    }
-    
-    for(i =0 ; i<strlen(s) ; i++)
-    {
-     if(s[i] == 'U')
-     {
-                  if(orientation == 0)
-                  {
-                    delay(2000);
-                    ninety_degrees_left();
-                    delay(2000);
-                    forward_5cm(); 
-                  }      
-                  else if (orientation == 1)
-                  {
-                    delay(2000);
-                    forward_5cm();         
-                  }
-                  else if (orientation == 2)
-                  {
-                    delay(2000);
-                    ninety_degrees_right();
-                    delay(2000);
-                    forward_5cm();        
-                  }
-                  else 
-                  {
-                    delay(2000);
-                    ninety_degrees_right();
-                    delay(2000);
-                    ninety_degrees_right();
-                    delay(2000);
-                    forward_5cm();        
-                  }
-                 orientation = 1 ;
-     }
-     else if (s[i] == 'R')
-     {
-                
-                if(orientation == 0)
-                {        
-                  delay(2000);
-                  forward_5cm(); 
-                }      
-                else if (orientation == 1)
-                {
-                  delay(2000);
-                  ninety_degrees_right();
-                  delay(2000);
-                  forward_5cm();         
-                }
-                else if (orientation == 2)
-                {
-                  delay(2000);
-                  ninety_degrees_right();
-                  delay(2000);
-                  ninety_degrees_right();
-                  delay(2000);
-                  forward_5cm();        
-                }
-                else 
-                {        
-                  ninety_degrees_left();
-                  delay(2000);
-                  forward_5cm();        
-                }
-               orientation = 0 ;
-     }
-     else if (s[i] == 'D')
-     {
-      
-
-              if(orientation == 0)
-              {
-                delay(2000);
-                ninety_degrees_right();        
-                delay(2000);
-                forward_5cm(); 
-              }      
-              else if (orientation == 1)
-              {
-                delay(2000);
-                ninety_degrees_right();
-                delay(2000);
-                ninety_degrees_right();
-                delay(2000);
-                forward_5cm();         
-              }
-              else if (orientation == 2)
-              {
-                delay(2000);
-                ninety_degrees_left();
-                delay(2000);
-                forward_5cm();        
-              }
-              else 
-              {               
-                delay(2000);
-                forward_5cm();        
-              }
-             orientation = 3 ;
-                    
-     }
-     else if (s[i] == 'L')
-     {
-
-              if(orientation == 0)
-              {
-                delay(2000);
-                ninety_degrees_right();
-                delay(2000);
-                ninety_degrees_right();
-                delay(2000);
-                forward_5cm(); 
-              }      
-              else if (orientation == 1)
-              {
-                delay(2000);
-                ninety_degrees_left();       
-                delay(2000);
-                forward_5cm();  
-              }
-              else if (orientation == 2)
-              {                    
-                delay(2000);
-                forward_5cm();        
-              }
-              else 
-              {               
-                delay(2000);
-                ninety_degrees_right();
-                delay(2000);
-                forward_5cm();        
-              }
-              orientation = 2 ;
-     
-     }
-     
-    }
-  
-}
-
-
-
-
-
