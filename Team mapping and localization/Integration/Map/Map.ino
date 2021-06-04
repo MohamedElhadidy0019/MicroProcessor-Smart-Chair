@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <NewPing.h> //library for ultrasonic sensor
 
+#define PI (float)3.141
 /* Sensors data : */
 //const byte TrigerPins [3] = {10,11,12};              /* index --> 0 : front, 1 :right, 2 : left */
 //const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
@@ -52,12 +53,11 @@ double current_angle = 0;
 #define COL 20
 #define oo 250
 uint8_t Map[(int)((ROW * COL) / 8) + 5];
-Node src;
 #define FREE_MAP 1
 #define OBSTACLE_MAP 0
 // ---------------- array of directions  -----------------
 char s[200] = "";
-int orientation = 1;
+int orientation = 3;
 int i = 0;
 
 typedef struct node
@@ -67,33 +67,55 @@ typedef struct node
     //  4 free  2parent   10 x & y
     struct node *next;
 } Node;
+Node src, dest;
 
 /* to transform the distance into x , y (for the map indexing) position based on the sensor number */
 void Transform(int dist, int sensorNumber)
 {
-    
+    //90 degree= PI/2
+    //180 degree = PI
+    switch (orientation)
+    {
+    case 0:
+        current_angle=-(PI/(float)2.0);
+        break;
+    case 1:
+        current_angle=PI;
+        break;
+    case 2:
+        current_angle=PI/(float)2.0;
+        break;
+    case 3:
+        current_angle=0;
+        break;
+    default:
+        break;
+    }
+    x_position = getx(src);
+    y_position = gety(src);
     int x, y;
-    if (dist != -1)
+    if (dist != -1 || dist==0)
     {
         switch (sensorNumber)
         {
         case 0: /* front */
-            x = x_position + dist * sin(current_angle);
-            y = y_position + dist * cos(current_angle);
+            x = x_position + dist * cos(current_angle);
+            y = y_position + dist * sin(current_angle*(float)-1.0);
             break;
 
         case 1: /* right */
-            x = x_position + dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle * -1);
+            x = x_position + dist * sin(current_angle*(float)-1.0);
+            y = y_position - dist * cos(current_angle );
             break;
 
         case 2: /* left */
 
-            x = x_position - dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle);
+            x = x_position + dist * sin(current_angle);
+            y = y_position + dist * cos(current_angle);
             break;
         }
         /* if x or y are < 0 , then point is out of the rang of the map */
+        
         if (!(x < 0 || y < 0))
             write_Map(Map, x, y, OBSTACLE_MAP);
     }
@@ -107,7 +129,8 @@ void calculate_Distance(int duration, int sensor_num)
     distance = (duration * 0.0343) / 2.0;
     if (distance > 50)
     {
-        distance = -1; //readiung out of range
+        distance = -1; //reading out of range
+        return;
     }
     Transform((int)(distance / 5), sensor_num);
 }
@@ -298,7 +321,7 @@ void ninety_degrees_right()
     analogWrite(enB, 0);
 }
 
-bool x = 1;
+//bool x = 1;
 
 // ------------------- Stack Data structure -----------------
 const int MAX_SIZE = 90;
@@ -774,22 +797,21 @@ void loop()
 {
     clear_path_s();
     Serial.println("kak from the beginning");
-    if (x == 1 || 1)
-    {
-        // int reading = us.ping_cm(); //take reading for ultrasonic
-        // Serial.print("value of newping=");
-        // Serial.println(reading);
-        // //   delay(500);
-        //   Serial.println("Entered the loop");
-        Read_ultrasonic();
-        //delay(500);
-        //Serial.println("st loop ");
 
-        //-------------------Write the map ----------------------------------
-        // 1 --> free & 0 --> block
+    // int reading = us.ping_cm(); //take reading for ultrasonic
+    // Serial.print("value of newping=");
+    // Serial.println(reading);
+    // //   delay(500);
+    //   Serial.println("Entered the loop");
+    Read_ultrasonic();
+    //delay(500);
+    //Serial.println("st loop ");
 
-        //Serial.println("end writing to map");
-        /*       write_Map(Map, 4, 3, 0);
+    //-------------------Write the map ----------------------------------
+    // 1 --> free & 0 --> block
+
+    //Serial.println("end writing to map");
+    /*       write_Map(Map, 4, 3, 0);
       write_Map(Map, 1, 1, 0);
       write_Map(Map, 3, 3, 0);
       write_Map(Map, 2, 3, 0);
@@ -799,45 +821,40 @@ void loop()
       write_Map(Map, 3, 6, 0);
       write_Map(Map, 4, 6, 0);
       write_Map(Map, 9, 0, 0); */
-        // int temp_now;
-        // Serial.print("distnace=");
-        // Serial.println(temp_now);
-        // Serial.println("READ DIST \n\n");
-        // ---------------------- Run  the algorithm  -----------------------
-        //Serial.println("define nodes ");
-        Node  dest;
-        
-        set_xy(&dest, 5, 5); //
-        Serial.print("Src --> \t");
-        Serial.print(getx(src));
-        Serial.print("   ,   ");
-        Serial.print(gety(src));
-        Serial.print("\n");
-        Serial.print("Dest--> \t");
-        Serial.print(getx(dest));
-        Serial.print("   ,   ");
-        Serial.print(gety(dest));
-        Serial.print("\n");
+    // int temp_now;
+    // Serial.print("distnace=");
+    // Serial.println(temp_now);
+    // Serial.println("READ DIST \n\n");
+    // ---------------------- Run  the algorithm  -----------------------
+    //Serial.println("define nodes ");
+    //Node dest;
 
-        aStarSearch(Map, src, dest);
-        // ---------------------- Print the path -----------------------
-        Serial.print("The path is -->  ");
-        for (int i = 0; i < strlen(s); i++)
-        {
-            Serial.print(s[i]);
-        }
-        x = 0;
-        Serial.println("\nDone \n");
-    }
-    else
+    set_xy(&dest, 5, 5); //
+    Serial.print("Src --> \t");
+    Serial.print(getx(src));
+    Serial.print("   ,   ");
+    Serial.print(gety(src));
+    Serial.print("\n");
+    Serial.print("Dest--> \t");
+    Serial.print(getx(dest));
+    Serial.print("   ,   ");
+    Serial.print(gety(dest));
+    Serial.print("\n");
+
+    aStarSearch(Map, src, dest);
+    // ---------------------- Print the path -----------------------
+    Serial.print("The path is -->  ");
+    for (int i = 0; i < strlen(s); i++)
     {
-        x = 0;
+        Serial.print(s[i]);
     }
+    Serial.println("\nDone \n");
+
     //0 -> right
-    // 1 ->up 
-    // 2 -> left 
-    // 3-> down 
-    
+    // 1 ->up
+    // 2 -> left
+    // 3-> down
+
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
@@ -873,6 +890,7 @@ void loop()
                 forward_5cm();
             }
             orientation = 1;
+            set_xy(&src, getx(src) - 1, gety(src));
         }
         else if (s[i] == 'R')
         {
@@ -905,6 +923,7 @@ void loop()
                 forward_5cm();
             }
             orientation = 0;
+            set_xy(&src, getx(src), gety(src) + 1);
         }
         else if (s[i] == 'D')
         {
@@ -938,6 +957,7 @@ void loop()
                 forward_5cm();
             }
             orientation = 3;
+            set_xy(&src, getx(src) + 1, gety(src));
         }
         else if (s[i] == 'L')
         {
@@ -971,13 +991,14 @@ void loop()
                 forward_5cm();
             }
             orientation = 2;
+            set_xy(&src, getx(src), gety(src) - 1);
         }
     }
 }
 void clear_path_s()
 {
-    for(int i=0;i<200;i++)
+    for (int i = 0; i < 200; i++)
     {
-        s[i]='\0';
+        s[i] = '\0';
     }
 }
