@@ -71,6 +71,13 @@ typedef struct node
 } Node;
 Node src, dest;
 
+void Delay_nonBlocking(int wnated_in_millis)
+{
+    int theTime = millis();
+    while ((millis() - theTime) < wnated_in_millis)
+        ;
+}
+
 /* to transform the distance into x , y (for the map indexing) position based on the sensor number */
 void Transform(int dist, int sensorNumber)
 {
@@ -119,7 +126,13 @@ void Transform(int dist, int sensorNumber)
         /* if x or y are < 0 , then point is out of the rang of the map */
 
         if (!(x < 0 || y < 0))
+        {
+            Serial.print("Writing now at (x,y)=");
+            Serial.print(x);
+            Serial.print(",");
+            Serial.println(y);
             write_Map(Map, x, y, OBSTACLE_MAP);
+        }
     }
     return;
 }
@@ -271,7 +284,7 @@ void forward_5cm()
     // analogWrite(enA, 60);
     // analogWrite(enB, 60);
 
-    // delay(180);
+    // Delay_nonBlocking(180);
     // digitalWrite(in1, HIGH);
     // digitalWrite(in2, HIGH);
     // digitalWrite(in3, HIGH);
@@ -293,7 +306,7 @@ void ninety_degrees_left()
     // analogWrite(enA, 80);
     // analogWrite(enB, 80);
 
-    // delay(400);
+    // Delay_nonBlocking(400);
     // digitalWrite(in1, HIGH);
     // digitalWrite(in2, HIGH);
     // digitalWrite(in3, HIGH);
@@ -315,7 +328,7 @@ void ninety_degrees_right()
     // analogWrite(enA, 80);
     // analogWrite(enB, 80);
 
-    // delay(350);
+    // Delay_nonBlocking(350);
     // digitalWrite(in1, HIGH);
     // digitalWrite(in2, HIGH);
     // digitalWrite(in3, HIGH);
@@ -793,7 +806,7 @@ void setup()
                 write_Map(Map, i, j, FREE_MAP);
             }
         }
-        Serial.println("finished the MAAAAAP");
+        //Serial.println("finished the MAAAAAP");
     }
     set_xy(&src, 0, 0);
 }
@@ -801,15 +814,17 @@ void setup()
 void loop()
 {
     clear_path_s();
-    Serial.println("kak from the beginning");
+    // read_Map(Map,0,3);
+    Serial.print("Value of(0,3) (y,x)=");
+    Serial.println(read_Map(Map, 0, 3));
 
     // int reading = us.ping_cm(); //take reading for ultrasonic
     // Serial.print("value of newping=");
     // Serial.println(reading);
-    // //   delay(500);
+    // //   Delay_nonBlocking(500);
     //   Serial.println("Entered the loop");
     Read_ultrasonic();
-    //delay(500);
+    //Delay_nonBlocking(500);
     //Serial.println("st loop ");
 
     //-------------------Write the map ----------------------------------
@@ -863,35 +878,36 @@ void loop()
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
-        delay(500);
+        Delay_nonBlocking(500);
         if (s[i] == 'U')
         {
             if (orientation == 0)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_left();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
+
                 forward_5cm();
             }
             orientation = 1;
@@ -902,29 +918,29 @@ void loop()
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             orientation = 0;
@@ -935,30 +951,30 @@ void loop()
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             orientation = 3;
@@ -969,30 +985,30 @@ void loop()
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             orientation = 2;
