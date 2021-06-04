@@ -1,0 +1,27 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\variants\\mega"
+  },
+  {
+    "Sourcefile": "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\bin\\sketch\\Map.ino.cpp",
+    "Include": "NewPing.h",
+    "Includepath": "C:\\Users\\Mohamed\\Documents\\Arduino\\libraries\\NewPing-master"
+  },
+  {
+    "Sourcefile": "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\bin\\sketch\\Map.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\Mohamed\\Documents\\Arduino\\libraries\\NewPing-master\\NewPing.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

@@ -1,3 +1,5 @@
+#include <Arduino.h>
+#line 1 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -69,6 +71,75 @@ typedef struct node
 } Node;
 
 /* to transform the distance into x , y (for the map indexing) position based on the sensor number */
+#line 72 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Transform(int dist, int sensorNumber);
+#line 104 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void calculate_Distance(int duration, int sensor_num);
+#line 116 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Read_ultrasonic();
+#line 129 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int getx(struct node n);
+#line 136 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int gety(struct node n);
+#line 143 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int get_x_parent(struct node n);
+#line 167 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int get_y_parent(struct node n);
+#line 193 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void set_xy(struct node *n, int x, int y);
+#line 199 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void set_xyp(struct node *n, int diff);
+#line 208 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+uint8_t read_Map(uint8_t *map, uint8_t index_y, uint8_t index_x);
+#line 219 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state);
+#line 236 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void forward_5cm();
+#line 257 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void ninety_degrees_left();
+#line 279 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void ninety_degrees_right();
+#line 308 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool isEmpty_s();
+#line 316 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool isFull();
+#line 324 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool peek_s(struct node *num);
+#line 335 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool pop_s(struct node *num);
+#line 350 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool push_s(struct node num);
+#line 363 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+Node* newNode(uint16_t data, uint8_t priority);
+#line 374 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void pop(Node **head);
+#line 381 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void push(Node **head, uint16_t data, uint8_t priority);
+#line 417 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+Node* peek(Node **head);
+#line 422 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isEmpty(Node **head);
+#line 428 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isValid(int row, int col);
+#line 433 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int compare(struct node node1, struct node node2);
+#line 440 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isUnBlocked(uint8_t *map, int row, int col);
+#line 445 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isDestination(int row, int col, struct node dest);
+#line 453 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int calculateHValue(int row, int col, struct node dest);
+#line 459 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void tracePath(struct node cellDetails[][20], Node dest, Node src);
+#line 534 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void aStarSearch(uint8_t *map, struct node src, struct node dest);
+#line 739 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void setup();
+#line 773 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void loop();
+#line 977 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void clear_path_s();
+#line 72 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
 void Transform(int dist, int sensorNumber)
 {
     
@@ -981,3 +1052,4 @@ void clear_path_s()
         s[i]='\0';
     }
 }
+

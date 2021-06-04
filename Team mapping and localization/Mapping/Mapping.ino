@@ -1,5 +1,5 @@
-#define TrigerPin1 9
-#define FirstUltra_Echo 10
+#define TrigerPin1 11
+#define FirstUltra_Echo 8
 
 #define Switch_front 5
 #define Switch_back 6
@@ -133,19 +133,19 @@ void setup()
 void loop()
 {
   Read_ultrasonic();
-  Read_swithces();
-  if (distance != -1)
-  {
-    int x_map=x_position+distance*sin(front_angle);
-    int y_map=y_position+distance*cos(front_angle);
-    Map[x_map][y_map]= 1;
-    Serial.print("(");
-    Serial.print(x_map);
-    Serial.print(",");
-    Serial.print(y_map);
-    Serial.println(")");
-    // Map[current_location_width][current_location_front + int(distance)] = 1;
-  }
+ // Read_swithces();
+  // if (distance != -1)
+  // {
+  //   int x_map=x_position+distance*sin(front_angle);
+  //   int y_map=y_position+distance*cos(front_angle);
+  //   Map[x_map][y_map]= 1;
+  //   Serial.print("(");
+  //   Serial.print(x_map);
+  //   Serial.print(",");
+  //   Serial.print(y_map);
+  //   Serial.println(")");
+  //   // Map[current_location_width][current_location_front + int(distance)] = 1;
+  // }
 }
 
 // Map[current_location + int(distance)] = 1;

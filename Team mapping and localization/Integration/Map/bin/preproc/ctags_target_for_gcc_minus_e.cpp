@@ -1,60 +1,69 @@
+# 1 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <NewPing.h> //library for ultrasonic sensor
+# 3 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+
+# 5 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
 
 /* Sensors data : */
 //const byte TrigerPins [3] = {10,11,12};              /* index --> 0 : front, 1 :right, 2 : left */
 //const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
 // const byte TrigerPins = 11;
 // const byte echos = 8;
-#define TrigerPins A0
-#define echos A1
+
+
 //byte current_sensor = 0;
 float distance;
 float duration;
 
 /* Map :*/
 /* #define MAP_MAX_X 100
-#define MAP_MAX_Y 150
-uint8_t Map[1875];   */
-/* 100bit*150bit == 100cm*150cm
-                                                        x is width : MAP_MAX_X   
-                                                        y is height: MAP_MAY_Y   
-                                                        we access the array by coordinated(x,y)*/
 
+#define MAP_MAX_Y 150
+
+uint8_t Map[1875];   */
+# 21 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+/* 100bit*150bit == 100cm*150cm
+
+                                                        x is width : MAP_MAX_X   
+
+                                                        y is height: MAP_MAY_Y   
+
+                                                        we access the array by coordinated(x,y)*/
+# 26 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
 /* Robot position : */
-#define DISTANCE_PER_MOVE 5
+
 int x_position = 0;
 int y_position = 0;
 double current_angle = 0;
 
 /* Motor */
 // ---------------- define pins -----------------
-#define enA 10
-#define in1 7
-#define in2 6
-#define enB 9
-#define in3 5
-#define in4 4
+
+
+
+
+
+
 // ---------------- algorithm includes -----------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <math.h>
-#define right 0
-#define up 1
-#define left 2
-#define down 3
-#define ROW 20
-#define COL 20
-#define oo 250
-uint8_t Map[(int)((ROW * COL) / 8) + 5];
+# 42 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+# 43 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+
+# 45 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+# 46 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+# 47 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 2
+
+
+
+
+
+
+
+
+# 54 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+uint8_t Map[(int)((20 * 20) / 8) + 5];
 Node src;
-#define FREE_MAP 1
-#define OBSTACLE_MAP 0
+
+
 // ---------------- array of directions  -----------------
 char s[200] = "";
 int orientation = 1;
@@ -71,7 +80,7 @@ typedef struct node
 /* to transform the distance into x , y (for the map indexing) position based on the sensor number */
 void Transform(int dist, int sensorNumber)
 {
-    
+
     int x, y;
     if (dist != -1)
     {
@@ -95,7 +104,7 @@ void Transform(int dist, int sensorNumber)
         }
         /* if x or y are < 0 , then point is out of the rang of the map */
         if (!(x < 0 || y < 0))
-            write_Map(Map, x, y, OBSTACLE_MAP);
+            write_Map(Map, x, y, 0);
     }
     return;
 }
@@ -115,12 +124,12 @@ void calculate_Distance(int duration, int sensor_num)
 /* handle the readings from the 3 sensors simultaneously */
 void Read_ultrasonic()
 {
-    digitalWrite(TrigerPins, LOW);
+    digitalWrite(A0, 0x0);
     delayMicroseconds(2);
-    digitalWrite(TrigerPins, HIGH);
+    digitalWrite(A0, 0x1);
     delayMicroseconds(10);
-    digitalWrite(TrigerPins, LOW);
-    duration = pulseIn(echos, HIGH);
+    digitalWrite(A0, 0x0);
+    duration = pulseIn(A1, 0x1);
     calculate_Distance(duration, 0);
     Serial.print("distance=");
     Serial.println(distance);
@@ -129,14 +138,14 @@ void Read_ultrasonic()
 int getx(struct node n)
 {
     uint16_t x = n.xy & 0b0000001111111111;
-    x = x / COL;
+    x = x / 20;
     return x;
 }
 
 int gety(struct node n)
 {
     uint16_t y = n.xy & 0b0000001111111111;
-    y = y % COL;
+    y = y % 20;
     return y;
 }
 
@@ -193,7 +202,7 @@ int get_y_parent(struct node n)
 void set_xy(struct node *n, int x, int y)
 {
     n->xy = n->xy & 0b1111110000000000;
-    n->xy = (x * COL + y) | n->xy;
+    n->xy = (x * 20 + y) | n->xy;
 }
 
 void set_xyp(struct node *n, int diff)
@@ -210,7 +219,7 @@ uint8_t read_Map(uint8_t *map, uint8_t index_y, uint8_t index_x) //function take
     // index= x+ width*y   source: https://softwareengineering.stackexchange.com/questions/212808/treating-a-1d-data-structure-as-2d-grid/212813
     //index_x = MAP_MAX_X - index_x;
     //index_y = MAP_MAX_Y - index_y;
-    uint8_t index = index_x + COL * index_y;
+    uint8_t index = index_x + 20 * index_y;
     uint8_t bigIndex = index / 8;
     uint8_t shiftIndex = index % 8;
     return ((map[bigIndex] >> shiftIndex) & 0x01);
@@ -220,7 +229,7 @@ void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state) //
 {
     //index_x = MAP_MAX_X - index_x;
     //index_y = MAP_MAX_Y - index_y;
-    uint8_t index = index_x + COL * index_y;
+    uint8_t index = index_x + 20 * index_y;
     uint8_t bigIndex = index / 8;
     uint8_t shiftIndex = index % 8;
     if (state) //set bit
@@ -236,66 +245,66 @@ void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state) //
 void forward_5cm()
 {
     Serial.println("MOVING FORWARD NOW");
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    digitalWrite(7, 0x1);
+    digitalWrite(6, 0x0);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    digitalWrite(5, 0x1);
+    digitalWrite(4, 0x0);
 
-    analogWrite(enA, 60);
-    analogWrite(enB, 60);
+    analogWrite(10, 60);
+    analogWrite(9, 60);
 
     delay(180);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    digitalWrite(7, 0x1);
+    digitalWrite(6, 0x1);
+    digitalWrite(5, 0x1);
+    digitalWrite(4, 0x1);
+    analogWrite(10, 0);
+    analogWrite(9, 0);
 }
 
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
 
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    digitalWrite(7, 0x0);
+    digitalWrite(6, 0x1);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    digitalWrite(5, 0x1);
+    digitalWrite(4, 0x0);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
+    analogWrite(10, 80);
+    analogWrite(9, 80);
 
     delay(400);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    digitalWrite(7, 0x1);
+    digitalWrite(6, 0x1);
+    digitalWrite(5, 0x1);
+    digitalWrite(4, 0x1);
+    analogWrite(10, 0);
+    analogWrite(9, 0);
 }
 
 void ninety_degrees_right()
 {
     Serial.println("MOVING RIGHT NOW");
 
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    digitalWrite(7, 0x1);
+    digitalWrite(6, 0x0);
 
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
+    digitalWrite(5, 0x0);
+    digitalWrite(4, 0x1);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
+    analogWrite(10, 80);
+    analogWrite(9, 80);
 
     delay(350);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    digitalWrite(7, 0x1);
+    digitalWrite(6, 0x1);
+    digitalWrite(5, 0x1);
+    digitalWrite(4, 0x1);
+    analogWrite(10, 0);
+    analogWrite(9, 0);
 }
 
 bool x = 1;
@@ -366,7 +375,11 @@ Node *newNode(uint16_t data, uint8_t priority)
     Node *temp = (Node *)calloc(1, sizeof(struct node));
     temp->xy = data;
     temp->weight = priority;
-    temp->next = NULL;
+    temp->next = 
+# 369 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 3 4
+                __null
+# 369 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+                    ;
 
     return temp;
 }
@@ -401,7 +414,11 @@ void push(Node **head, uint16_t data, uint8_t priority)
 
         // Traverse the list and find a
         // position to insert new node
-        while (start->next != NULL &&
+        while (start->next != 
+# 404 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 3 4
+                             __null 
+# 404 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+                                  &&
                start->next->weight <= priority)
         {
             start = start->next;
@@ -421,13 +438,17 @@ Node *peek(Node **head)
 
 int isEmpty(Node **head)
 {
-    return (*head) == NULL;
+    return (*head) == 
+# 424 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 3 4
+                     __null
+# 424 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+                         ;
 }
 
 // ------------------- Helping functions to A star algorithm  -----------------
 int isValid(int row, int col)
 {
-    return (row >= 0) && (row < ROW) && (col >= 0) && (col < COL);
+    return (row >= 0) && (row < 20) && (col >= 0) && (col < 20);
 }
 
 int compare(struct node node1, struct node node2)
@@ -453,10 +474,10 @@ int isDestination(int row, int col, struct node dest)
 int calculateHValue(int row, int col, struct node dest)
 {
     //return round(sqrt(pow(row - getx(dest), 2) + pow(col - gety(dest), 2)));
-    return abs(row - getx(dest)) + abs(col - gety(dest));
+    return ((row - getx(dest))>0?(row - getx(dest)):-(row - getx(dest))) + ((col - gety(dest))>0?(col - gety(dest)):-(col - gety(dest)));
 }
 // ------------------- The main Algorithm   -----------------
-void tracePath(struct node cellDetails[][COL], Node dest, Node src)
+void tracePath(struct node cellDetails[][20], Node dest, Node src)
 {
 
     //Serial.println("\nThe Path is ");
@@ -485,19 +506,29 @@ void tracePath(struct node cellDetails[][COL], Node dest, Node src)
     //idx++; path[idx] = curr;
     //idx++;
     /*
+
   Serial.print("\n");
+
   Serial.print("( ") ; Serial.print(getx(curr)) ; 
+
   Serial.print(" ,  "); Serial.print( gety(curr));
+
   Serial.print(" -->  ");
+
   */
+# 493 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
     while (!isEmpty_s())
     {
 
         pop_s(&curr);
         /*Serial.print("( ") ; Serial.print(getx(curr)) ; 
+
     Serial.print(" ,  "); Serial.print( gety(curr));
+
     Serial.print(" -->  ");
+
 */
+# 501 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
         //path[idx] = curr;
         //idx++;
         int x_diff = getx(curr) - get_x_parent(curr);
@@ -555,18 +586,22 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
         return;
     }
 
-    uint8_t closedList[(int)(ROW * COL * 1.0 / 8) + 2];
+    uint8_t closedList[(int)(20 * 20 * 1.0 / 8) + 2];
     memset(closedList, 0, sizeof(closedList));
 
-    Node cellDetails[ROW][COL];
+    Node cellDetails[20][20];
     int i, j;
-    for (i = 0; i < ROW; i++)
+    for (i = 0; i < 20; i++)
     {
-        for (j = 0; j < COL; j++)
+        for (j = 0; j < 20; j++)
         {
-            cellDetails[i][j].weight = oo;
+            cellDetails[i][j].weight = 250;
             cellDetails[i][j].xy = 0;
-            cellDetails[i][j].next = NULL;
+            cellDetails[i][j].next = 
+# 569 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino" 3 4
+                                    __null
+# 569 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+                                        ;
         }
     }
 
@@ -598,7 +633,7 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
             if (isDestination(i - 1, j, dest) == 1)
             {
                 set_xy(&cellDetails[i - 1][j], i - 1, j);
-                set_xyp(&cellDetails[i - 1][j], down);
+                set_xyp(&cellDetails[i - 1][j], 3);
                 Serial.println("The destination cell is found\n");
                 tracePath(cellDetails, dest, src);
                 foundDest = 1;
@@ -610,11 +645,11 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
                 fNew = cellDetails[i][j].weight - calculateHValue(i, j, dest) + 1 +
                        calculateHValue(i - 1, j, dest);
 
-                if (cellDetails[i - 1][j].weight == oo || cellDetails[i - 1][j].weight > fNew)
+                if (cellDetails[i - 1][j].weight == 250 || cellDetails[i - 1][j].weight > fNew)
                 {
                     // Update the details of this cell
                     cellDetails[i - 1][j].weight = fNew;
-                    set_xyp(&cellDetails[i - 1][j], down);
+                    set_xyp(&cellDetails[i - 1][j], 3);
                     set_xy(&cellDetails[i - 1][j], i - 1, j);
 
                     push(&openList, cellDetails[i - 1][j].xy, fNew);
@@ -633,7 +668,7 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
             {
 
                 set_xy(&cellDetails[i + 1][j], i + 1, j);
-                set_xyp(&cellDetails[i + 1][j], up);
+                set_xyp(&cellDetails[i + 1][j], 1);
                 Serial.println("The destination cell is found\n");
                 tracePath(cellDetails, dest, src);
                 foundDest = 1;
@@ -647,12 +682,12 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
                 fNew = cellDetails[i][j].weight - calculateHValue(i, j, dest) + 1 +
                        calculateHValue(i + 1, j, dest);
 
-                if (cellDetails[i + 1][j].weight == oo || cellDetails[i + 1][j].weight > fNew)
+                if (cellDetails[i + 1][j].weight == 250 || cellDetails[i + 1][j].weight > fNew)
                 {
 
                     // Update the details of this cell
                     cellDetails[i + 1][j].weight = fNew;
-                    set_xyp(&cellDetails[i + 1][j], up);
+                    set_xyp(&cellDetails[i + 1][j], 1);
                     set_xy(&cellDetails[i + 1][j], i + 1, j);
 
                     push(&openList, cellDetails[i + 1][j].xy, fNew);
@@ -671,7 +706,7 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
             {
 
                 set_xy(&cellDetails[i][j + 1], i, j + 1);
-                set_xyp(&cellDetails[i][j + 1], left);
+                set_xyp(&cellDetails[i][j + 1], 2);
                 Serial.println("The destination cell is found\n");
                 tracePath(cellDetails, dest, src);
                 foundDest = 1;
@@ -686,12 +721,12 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
                 fNew = cellDetails[i][j].weight - calculateHValue(i, j, dest) + 1 +
                        calculateHValue(i, j + 1, dest);
 
-                if (cellDetails[i][j + 1].weight == oo || cellDetails[i][j + 1].weight > fNew)
+                if (cellDetails[i][j + 1].weight == 250 || cellDetails[i][j + 1].weight > fNew)
                 {
 
                     cellDetails[i][j + 1].weight = fNew;
                     set_xy(&cellDetails[i][j + 1], i, j + 1);
-                    set_xyp(&cellDetails[i][j + 1], left);
+                    set_xyp(&cellDetails[i][j + 1], 2);
                     push(&openList, cellDetails[i][j + 1].xy, fNew);
                 }
             }
@@ -707,7 +742,7 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
             if (isDestination(i, j - 1, dest) == 1)
             {
                 set_xy(&cellDetails[i][j - 1], i, j - 1);
-                set_xyp(&cellDetails[i][j - 1], right);
+                set_xyp(&cellDetails[i][j - 1], 0);
                 Serial.println("The destination cell is found\n");
                 tracePath(cellDetails, dest, src);
                 foundDest = 1;
@@ -719,11 +754,11 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
                 fNew = cellDetails[i][j].weight - calculateHValue(i, j, dest) + 1 +
                        calculateHValue(i, j - 1, dest);
 
-                if (cellDetails[i][j - 1].weight == oo || cellDetails[i][j - 1].weight > fNew)
+                if (cellDetails[i][j - 1].weight == 250 || cellDetails[i][j - 1].weight > fNew)
                 {
 
                     cellDetails[i][j - 1].weight = fNew;
-                    set_xyp(&cellDetails[i][j - 1], right);
+                    set_xyp(&cellDetails[i][j - 1], 0);
                     set_xy(&cellDetails[i][j - 1], i, j - 1);
                     push(&openList, cellDetails[i][j - 1].xy, fNew);
                 }
@@ -740,29 +775,31 @@ void setup()
 {
     Serial.begin(9600);
     /*   for(byte i = 0 ; i<3 ; i++) {pinMode(TrigerPins[i], INPUT);}
+
   for(byte i = 0 ; i<3 ; i++) {pinMode(echos[i], INPUT);} */
-    pinMode(TrigerPins, OUTPUT);
-    digitalWrite(TrigerPins, LOW);
-    pinMode(echos, INPUT);
+# 744 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+    pinMode(A0, 0x1);
+    digitalWrite(A0, 0x0);
+    pinMode(A1, 0x0);
     // ---------------motor pins--------------
-    pinMode(enA, OUTPUT);
-    pinMode(enB, OUTPUT);
-    pinMode(in1, OUTPUT);
-    pinMode(in2, OUTPUT);
-    pinMode(in3, OUTPUT);
-    pinMode(in4, OUTPUT);
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, LOW);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    pinMode(10, 0x1);
+    pinMode(9, 0x1);
+    pinMode(7, 0x1);
+    pinMode(6, 0x1);
+    pinMode(5, 0x1);
+    pinMode(4, 0x1);
+    digitalWrite(7, 0x0);
+    digitalWrite(6, 0x0);
+    digitalWrite(5, 0x0);
+    digitalWrite(4, 0x0);
+    analogWrite(10, 0);
+    analogWrite(9, 0);
     {
-        for (uint8_t i = 0; i < ROW; i++)
+        for (uint8_t i = 0; i < 20; i++)
         {
-            for (uint8_t j = 0; j < COL; j++)
+            for (uint8_t j = 0; j < 20; j++)
             {
-                write_Map(Map, i, j, FREE_MAP);
+                write_Map(Map, i, j, 1);
             }
         }
         Serial.println("finished the MAAAAAP");
@@ -790,23 +827,33 @@ void loop()
 
         //Serial.println("end writing to map");
         /*       write_Map(Map, 4, 3, 0);
+
       write_Map(Map, 1, 1, 0);
+
       write_Map(Map, 3, 3, 0);
+
       write_Map(Map, 2, 3, 0);
+
       write_Map(Map, 2, 4, 0);
+
       write_Map(Map, 2, 5, 0);
+
       write_Map(Map, 2, 6, 0);
+
       write_Map(Map, 3, 6, 0);
+
       write_Map(Map, 4, 6, 0);
+
       write_Map(Map, 9, 0, 0); */
+# 802 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
         // int temp_now;
         // Serial.print("distnace=");
         // Serial.println(temp_now);
         // Serial.println("READ DIST \n\n");
         // ---------------------- Run  the algorithm  -----------------------
         //Serial.println("define nodes ");
-        Node  dest;
-        
+        Node dest;
+
         set_xy(&dest, 5, 5); //
         Serial.print("Src --> \t");
         Serial.print(getx(src));
@@ -837,7 +884,7 @@ void loop()
     // 1 ->up 
     // 2 -> left 
     // 3-> down 
-    
+
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
