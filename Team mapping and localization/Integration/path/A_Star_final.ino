@@ -30,6 +30,9 @@ typedef struct node {
   //  4 free  2parent   10 x & y
   struct node* next;
 } Node;
+
+ Node src, dest;
+ 
 // ------------------- Deal with bits of node -----------------
 int getx(struct node n) {
   uint16_t x = n.xy & 0b0000001111111111;
@@ -232,7 +235,7 @@ void loop()
       write_Map(Map, 9, 0, 0);
     // ---------------------- Run  the algorithm  -----------------------
       //Serial.println("define nodes ");
-      Node src, dest;
+     
       set_xy(&src, 0, 0); 
       set_xy(&dest, 10 , 6);
       Serial.print("Src --> \t"); Serial.print(getx(src)); 
@@ -289,6 +292,9 @@ void loop()
                     forward_5cm();        
                   }
                  orientation = 1 ;
+                 set_xy(&src, getx(src)-1, gety(src));                    
+
+
      }
      else if (s[i] == 'R')
      {
@@ -321,6 +327,8 @@ void loop()
                   forward_5cm();        
                 }
                orientation = 0 ;
+               set_xy(&src, getx(src), gety(src)+1);               
+    
      }
      else if (s[i] == 'D')
      {
@@ -354,7 +362,9 @@ void loop()
                 delay(2000);
                 forward_5cm();        
               }
-             orientation = 3 ;
+             orientation = 3 ;                   
+             set_xy(&src, getx(src)+1, gety(src));                    
+
                     
      }
      else if (s[i] == 'L')
@@ -389,6 +399,8 @@ void loop()
                 forward_5cm();        
               }
               orientation = 2 ;
+              set_xy(&src, getx(src), gety(src)-1);                    
+
      
      }
      
