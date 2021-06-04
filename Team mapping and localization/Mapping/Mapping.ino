@@ -29,7 +29,7 @@ const float Ultra3_to_base_link = 10;
 float distance;
 float duration;
 // angles
-digita
+
 void Transform(int distance, int Ultra_num)
 {
 

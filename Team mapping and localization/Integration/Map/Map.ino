@@ -1,7 +1,8 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <NewPing.h> //library for ultrasonic sensor
+//#include <NewPing.h> //library for ultrasonic sensor
+#include "PID_motors.h"
 
 #define PI (float)3.141
 /* Sensors data : */
@@ -32,12 +33,13 @@ double current_angle = 0;
 
 /* Motor */
 // ---------------- define pins -----------------
-#define enA 10
-#define in1 7
-#define in2 6
-#define enB 9
-#define in3 5
-#define in4 4
+// commented these pins as they are now in PID_motors.h file
+// #define enA 10
+// #define in1 7
+// #define in2 6
+// #define enB 9
+// #define in3 5
+// #define in4 4
 // ---------------- algorithm includes -----------------
 #include <stdio.h>
 #include <stdlib.h>
@@ -77,16 +79,16 @@ void Transform(int dist, int sensorNumber)
     switch (orientation)
     {
     case 0:
-        current_angle=-(PI/(float)2.0);
+        current_angle = -(PI / (float)2.0);
         break;
     case 1:
-        current_angle=PI;
+        current_angle = PI;
         break;
     case 2:
-        current_angle=PI/(float)2.0;
+        current_angle = PI / (float)2.0;
         break;
     case 3:
-        current_angle=0;
+        current_angle = 0;
         break;
     default:
         break;
@@ -94,18 +96,18 @@ void Transform(int dist, int sensorNumber)
     x_position = getx(src);
     y_position = gety(src);
     int x, y;
-    if (dist != -1 || dist==0)
+    if (dist != -1 || dist == 0)
     {
         switch (sensorNumber)
         {
         case 0: /* front */
             x = x_position + dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle*(float)-1.0);
+            y = y_position + dist * sin(current_angle * (float)-1.0);
             break;
 
         case 1: /* right */
-            x = x_position + dist * sin(current_angle*(float)-1.0);
-            y = y_position - dist * cos(current_angle );
+            x = x_position + dist * sin(current_angle * (float)-1.0);
+            y = y_position - dist * cos(current_angle);
             break;
 
         case 2: /* left */
@@ -115,7 +117,7 @@ void Transform(int dist, int sensorNumber)
             break;
         }
         /* if x or y are < 0 , then point is out of the rang of the map */
-        
+
         if (!(x < 0 || y < 0))
             write_Map(Map, x, y, OBSTACLE_MAP);
     }
@@ -259,66 +261,67 @@ void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state) //
 void forward_5cm()
 {
     Serial.println("MOVING FORWARD NOW");
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    Move(5, 0);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, LOW);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, LOW);
 
-    analogWrite(enA, 60);
-    analogWrite(enB, 60);
+    // analogWrite(enA, 60);
+    // analogWrite(enB, 60);
 
-    delay(180);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // delay(180);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
+    RotateLeft();
+    // digitalWrite(in1, LOW);
+    // digitalWrite(in2, HIGH);
 
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, LOW);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    // analogWrite(enA, 80);
+    // analogWrite(enB, 80);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
-
-    delay(400);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // delay(400);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
 void ninety_degrees_right()
 {
     Serial.println("MOVING RIGHT NOW");
+    RotateRight();
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, LOW);
 
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    // digitalWrite(in3, LOW);
+    // digitalWrite(in4, HIGH);
 
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
+    // analogWrite(enA, 80);
+    // analogWrite(enB, 80);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
-
-    delay(350);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // delay(350);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
 //bool x = 1;
@@ -768,18 +771,20 @@ void setup()
     digitalWrite(TrigerPins, LOW);
     pinMode(echos, INPUT);
     // ---------------motor pins--------------
-    pinMode(enA, OUTPUT);
-    pinMode(enB, OUTPUT);
-    pinMode(in1, OUTPUT);
-    pinMode(in2, OUTPUT);
-    pinMode(in3, OUTPUT);
-    pinMode(in4, OUTPUT);
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, LOW);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    //in OID_motors.h file now
+    // pinMode(enA, OUTPUT);
+    // pinMode(enB, OUTPUT);
+    // pinMode(in1, OUTPUT);
+    // pinMode(in2, OUTPUT);
+    // pinMode(in3, OUTPUT);
+    // pinMode(in4, OUTPUT);
+    // digitalWrite(in1, LOW);
+    // digitalWrite(in2, LOW);
+    // digitalWrite(in3, LOW);
+    // digitalWrite(in4, LOW);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
+    motors_setup(); //function to setup motors
     {
         for (uint8_t i = 0; i < ROW; i++)
         {
