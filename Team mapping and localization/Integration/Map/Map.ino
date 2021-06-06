@@ -154,12 +154,18 @@ void calculate_Distance(int duration, int sensor_num)
 /* handle the readings from the 3 sensors simultaneously */
 void Read_ultrasonic()
 {
-    digitalWrite(TrigerPins[current_sensor], LOW);
-    delayMicroseconds(2);
-    digitalWrite(TrigerPins[current_sensor], HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TrigerPins[current_sensor], LOW);
-    duration = pulseIn(echos[current_sensor], HIGH);
+    duration = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        digitalWrite(TrigerPins[current_sensor], LOW);
+        delayMicroseconds(2);
+        digitalWrite(TrigerPins[current_sensor], HIGH);
+        delayMicroseconds(10);
+        digitalWrite(TrigerPins[current_sensor], LOW);
+        duration += pulseIn(echos[current_sensor], HIGH);
+        delayMicroseconds(10);
+    }
+    duration=duration/10;
     calculate_Distance(duration, current_sensor);
     // Serial.print("distance=");
     // Serial.println(distance);
@@ -299,45 +305,45 @@ void forward_5cm()
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
-    // RotateLeft();
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
+    RotateLeft();
+    // digitalWrite(IN1, LOW);
+    // digitalWrite(IN2, HIGH);
 
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
+    // digitalWrite(IN3, HIGH);
+    // digitalWrite(IN4, LOW);
 
-    analogWrite(ENA, 80);
-    analogWrite(ENB, 80);
+    // analogWrite(ENA, 80);
+    // analogWrite(ENB, 80);
 
-    Delay_nonBlocking(500);
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, HIGH);
-    analogWrite(ENA, 0);
-    analogWrite(ENB, 0);
+    // Delay_nonBlocking(500);
+    // digitalWrite(IN1, HIGH);
+    // digitalWrite(IN2, HIGH);
+    // digitalWrite(IN3, HIGH);
+    // digitalWrite(IN4, HIGH);
+    // analogWrite(ENA, 0);
+    // analogWrite(ENB, 0);
 }
 
 void ninety_degrees_right()
 {
     Serial.println("MOVING RIGHT NOW");
-    //RotateRight();
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
+    RotateRight();
+    // digitalWrite(IN1, HIGH);
+    // digitalWrite(IN2, LOW);
 
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
+    // digitalWrite(IN3, LOW);
+    // digitalWrite(IN4, HIGH);
 
-    analogWrite(ENA, 80);
-    analogWrite(ENB, 80);
+    // analogWrite(ENA, 80);
+    // analogWrite(ENB, 80);
 
-    Delay_nonBlocking(350);
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, HIGH);
-    analogWrite(ENA, 0);
-    analogWrite(ENB, 0);
+    // Delay_nonBlocking(350);
+    // digitalWrite(IN1, HIGH);
+    // digitalWrite(IN2, HIGH);
+    // digitalWrite(IN3, HIGH);
+    // digitalWrite(IN4, HIGH);
+    // analogWrite(ENA, 0);
+    // analogWrite(ENB, 0);
 }
 
 //bool x = 1;
@@ -868,7 +874,7 @@ void loop()
     //Serial.println("define nodes ");
     //Node dest;
 
-    set_xy(&dest, 5, 5); //
+    set_xy(&dest, 20, 20); //
     Serial.print("Src --> \t");
     Serial.print(getx(src));
     Serial.print("   ,   ");
@@ -897,35 +903,35 @@ void loop()
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
-        Delay_nonBlocking(100);
+        Delay_nonBlocking(50);
         if (s[i] == 'U')
         {
             if (orientation == 0)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_left();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
 
                 forward_5cm();
             }
@@ -937,29 +943,29 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else
             {
                 ninety_degrees_left();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             orientation = 0;
@@ -970,30 +976,30 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_left();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             orientation = 3;
@@ -1004,30 +1010,30 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_left();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             else
             {
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 ninety_degrees_right();
-                Delay_nonBlocking(100);
+                Delay_nonBlocking(50);
                 forward_5cm();
             }
             orientation = 2;
@@ -1054,5 +1060,5 @@ void printMap()
         }
         Serial.println("");
     }
-    Delay_nonBlocking(1000);
+    Delay_nonBlocking(50);
 }
