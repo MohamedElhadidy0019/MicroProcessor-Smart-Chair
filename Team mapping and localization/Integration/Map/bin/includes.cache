@@ -11,16 +11,11 @@
   },
   {
     "Sourcefile": "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\bin\\sketch\\Map.ino.cpp",
-    "Include": "NewPing.h",
-    "Includepath": "C:\\Users\\Mohamed\\Documents\\Arduino\\libraries\\NewPing-master"
-  },
-  {
-    "Sourcefile": "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\bin\\sketch\\Map.ino.cpp",
     "Include": "",
     "Includepath": null
   },
   {
-    "Sourcefile": "C:\\Users\\Mohamed\\Documents\\Arduino\\libraries\\NewPing-master\\NewPing.cpp",
+    "Sourcefile": "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\bin\\sketch\\PID_motors.cpp",
     "Include": "",
     "Includepath": null
   }

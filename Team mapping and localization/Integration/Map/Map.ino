@@ -1,6 +1,9 @@
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <math.h>
 //#include <NewPing.h> //library for ultrasonic sensor
 #include "PID_motors.h"
 
@@ -10,9 +13,9 @@
 //const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
 // const byte TrigerPins = 11;
 // const byte echos = 8;
-#define TrigerPins A0
-#define echos A1
-//byte current_sensor = 0;
+const byte TrigerPins[3] = {A0, A1, A2}; /* index --> 0 : front, 1 :right, 2 : left */
+const byte echos[3] = {A3, A4, A5};
+byte current_sensor = 0;
 float distance;
 float duration;
 
@@ -41,20 +44,16 @@ double current_angle = 0;
 // #define in3 5
 // #define in4 4
 // ---------------- algorithm includes -----------------
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <math.h>
+
 #define right 0
 #define up 1
 #define left 2
 #define down 3
-#define ROW 20
-#define COL 20
-#define oo 250
-uint8_t Map[(int)((ROW * COL) / 8) + 5];
+#define ROW 24
+#define COL 24
+#define oo 1000
+//uint8_t Map[ (int)(ceil( ((ROW * COL) / 8.0))) ];
+uint8_t Map[72];
 #define FREE_MAP 1
 #define OBSTACLE_MAP 0
 // ---------------- array of directions  -----------------
@@ -103,37 +102,39 @@ void Transform(int dist, int sensorNumber)
     x_position = getx(src);
     y_position = gety(src);
     int x, y;
-    if (dist != -1 || dist == 0)
+    //if (dist != -1 || dist == 0)
+
+    switch (sensorNumber)
     {
-        switch (sensorNumber)
-        {
-        case 0: /* front */
-            x = x_position + dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle * (float)-1.0);
-            break;
+    case 0: /* front */
+        x = x_position + dist * cos(current_angle);
+        y = y_position + dist * sin(current_angle * (float)-1.0);
+        break;
 
-        case 1: /* right */
-            x = x_position + dist * sin(current_angle * (float)-1.0);
-            y = y_position - dist * cos(current_angle);
-            break;
+    case 1: /* right */
+        x = x_position + dist * sin(current_angle * (float)-1.0);
+        y = y_position - dist * cos(current_angle);
+        break;
 
-        case 2: /* left */
+    case 2: /* left */
 
-            x = x_position + dist * sin(current_angle);
-            y = y_position + dist * cos(current_angle);
-            break;
-        }
-        /* if x or y are < 0 , then point is out of the rang of the map */
-
-        if (!(x < 0 || y < 0))
-        {
-            Serial.print("Writing now at (x,y)=");
-            Serial.print(x);
-            Serial.print(",");
-            Serial.println(y);
-            write_Map(Map, x, y, OBSTACLE_MAP);
-        }
+        x = x_position + dist * sin(current_angle);
+        y = y_position + dist * cos(current_angle);
+        break;
     }
+    /* if x or y are < 0 , then point is out of the rang of the map */
+
+    if (!(x < 0 || y < 0))
+    {
+        Serial.print("sensor wrtiting now is no#");
+        Serial.print(current_sensor);
+        Serial.print(" Writing now at (x,y)=");
+        Serial.print(x);
+        Serial.print(",");
+        Serial.println(y);
+        write_Map(Map, x, y, OBSTACLE_MAP);
+    }
+
     return;
 }
 
@@ -153,15 +154,21 @@ void calculate_Distance(int duration, int sensor_num)
 /* handle the readings from the 3 sensors simultaneously */
 void Read_ultrasonic()
 {
-    digitalWrite(TrigerPins, LOW);
+    digitalWrite(TrigerPins[current_sensor], LOW);
     delayMicroseconds(2);
-    digitalWrite(TrigerPins, HIGH);
+    digitalWrite(TrigerPins[current_sensor], HIGH);
     delayMicroseconds(10);
-    digitalWrite(TrigerPins, LOW);
-    duration = pulseIn(echos, HIGH);
-    calculate_Distance(duration, 0);
-    Serial.print("distance=");
+    digitalWrite(TrigerPins[current_sensor], LOW);
+    duration = pulseIn(echos[current_sensor], HIGH);
+    calculate_Distance(duration, current_sensor);
+    // Serial.print("distance=");
+    // Serial.println(distance);
+
+    Serial.print("sensor_nimber=");
+    Serial.print(current_sensor);
+    Serial.print("   reading of distance=");
     Serial.println(distance);
+    current_sensor = (current_sensor == 2) ? 0 : (current_sensor + 1);
 }
 /* ------------------- Deal with bits of node -----------------*/
 int getx(struct node n)
@@ -243,38 +250,34 @@ void set_xyp(struct node *n, int diff)
 }
 
 // ------------------- Deal with Bit array  -----------------
-uint8_t read_Map(uint8_t *map, uint8_t index_y, uint8_t index_x) //function takes (x,y) and return the value of the bit wether it is 1 or 0
+
+uint8_t read_Map(uint8_t *Map_local, uint8_t index_x, uint8_t index_y) //function takes (x,y) and return the value of the bit wether it is 1 or 0
 {
+
     // index= x+ width*y   source: https://softwareengineering.stackexchange.com/questions/212808/treating-a-1d-data-structure-as-2d-grid/212813
-    //index_x = MAP_MAX_X - index_x;
-    //index_y = MAP_MAX_Y - index_y;
-    uint8_t index = index_x + COL * index_y;
+    int index = index_y + COL * index_x;
     uint8_t bigIndex = index / 8;
     uint8_t shiftIndex = index % 8;
-    return ((map[bigIndex] >> shiftIndex) & 0x01);
+    return ((Map_local[bigIndex] >> shiftIndex) & 0x01);
 }
-
-void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state) // (x_position, y_postion, state to set the bit or clear it)
+void write_Map(uint8_t *Map_local, uint8_t index_x, uint8_t index_y, uint8_t state) // (x_position, y_postion, state to set the bit or clear it)
 {
-    //index_x = MAP_MAX_X - index_x;
-    //index_y = MAP_MAX_Y - index_y;
-    uint8_t index = index_x + COL * index_y;
+    int index = index_y + COL * index_x;
     uint8_t bigIndex = index / 8;
     uint8_t shiftIndex = index % 8;
     if (state) //set bit
     {
-        map[bigIndex] |= 1 << shiftIndex;
+        Map_local[bigIndex] |= 1 << shiftIndex;
     }
     else // clear bit
     {
-        map[bigIndex] &= ~(1 << shiftIndex);
+        Map_local[bigIndex] &= ~(1 << shiftIndex);
     }
 }
-
 void forward_5cm()
 {
     Serial.println("MOVING FORWARD NOW");
-    Move(5, 0);
+    Move(15, 0);
     // digitalWrite(in1, HIGH);
     // digitalWrite(in2, LOW);
 
@@ -296,45 +299,45 @@ void forward_5cm()
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
-    RotateLeft();
-    // digitalWrite(in1, LOW);
-    // digitalWrite(in2, HIGH);
+    // RotateLeft();
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
 
-    // digitalWrite(in3, HIGH);
-    // digitalWrite(in4, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
 
-    // analogWrite(enA, 80);
-    // analogWrite(enB, 80);
+    analogWrite(ENA, 80);
+    analogWrite(ENB, 80);
 
-    // Delay_nonBlocking(400);
-    // digitalWrite(in1, HIGH);
-    // digitalWrite(in2, HIGH);
-    // digitalWrite(in3, HIGH);
-    // digitalWrite(in4, HIGH);
-    // analogWrite(enA, 0);
-    // analogWrite(enB, 0);
+    Delay_nonBlocking(500);
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENA, 0);
+    analogWrite(ENB, 0);
 }
 
 void ninety_degrees_right()
 {
     Serial.println("MOVING RIGHT NOW");
-    RotateRight();
-    // digitalWrite(in1, HIGH);
-    // digitalWrite(in2, LOW);
+    //RotateRight();
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
 
-    // digitalWrite(in3, LOW);
-    // digitalWrite(in4, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
 
-    // analogWrite(enA, 80);
-    // analogWrite(enB, 80);
+    analogWrite(ENA, 80);
+    analogWrite(ENB, 80);
 
-    // Delay_nonBlocking(350);
-    // digitalWrite(in1, HIGH);
-    // digitalWrite(in2, HIGH);
-    // digitalWrite(in3, HIGH);
-    // digitalWrite(in4, HIGH);
-    // analogWrite(enA, 0);
-    // analogWrite(enB, 0);
+    Delay_nonBlocking(350);
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENA, 0);
+    analogWrite(ENB, 0);
 }
 
 //bool x = 1;
@@ -778,11 +781,15 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
 void setup()
 {
     Serial.begin(9600);
-    /*   for(byte i = 0 ; i<3 ; i++) {pinMode(TrigerPins[i], INPUT);}
-  for(byte i = 0 ; i<3 ; i++) {pinMode(echos[i], INPUT);} */
-    pinMode(TrigerPins, OUTPUT);
-    digitalWrite(TrigerPins, LOW);
-    pinMode(echos, INPUT);
+    for (byte i = 0; i < 3; i++)
+    {
+        pinMode(TrigerPins[i], OUTPUT);
+        digitalWrite(TrigerPins[i], LOW);
+    }
+    for (byte i = 0; i < 3; i++)
+    {
+        pinMode(echos[i], INPUT);
+    }
     // ---------------motor pins--------------
     //in OID_motors.h file now
     // pinMode(enA, OUTPUT);
@@ -808,21 +815,33 @@ void setup()
         }
         //Serial.println("finished the MAAAAAP");
     }
+    // memset(Map,255,sizeof(Map));
+    // Serial.println("print the MAAAAP in setup");
+    // printMap();
     set_xy(&src, 0, 0);
+    memset(Map, 0xFF, sizeof(Map));
 }
 //NewPing us(3, 4, 100);
 void loop()
 {
     clear_path_s();
-    // read_Map(Map,0,3);
-    Serial.print("Value of(0,3) (y,x)=");
-    Serial.println(read_Map(Map, 0, 3));
 
-    // int reading = us.ping_cm(); //take reading for ultrasonic
+    //printMap();
+    //Serial.println("Value of(0,3) (y,x)=");
+    // Serial.println(read_Map(Map, 0, 3));
+    //Serial.println("MAO IN LOOOOOOOP");
+    //write_Map(Map, 13, 2, OBSTACLE_MAP);
+    // write_Map(Map, 15, 15, OBSTACLE_MAP);
+    //  printMap();
+    //     while (1)
+    //         ;
+    //     // int reading = us.ping_cm(); //take reading for ultrasonic
     // Serial.print("value of newping=");
     // Serial.println(reading);
     // //   Delay_nonBlocking(500);
     //   Serial.println("Entered the loop");
+    Read_ultrasonic();
+    Read_ultrasonic();
     Read_ultrasonic();
     //Delay_nonBlocking(500);
     //Serial.println("st loop ");
@@ -878,7 +897,7 @@ void loop()
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
-        Delay_nonBlocking(500);
+        Delay_nonBlocking(100);
         if (s[i] == 'U')
         {
             if (orientation == 0)
@@ -918,29 +937,29 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else
             {
                 ninety_degrees_left();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             orientation = 0;
@@ -951,30 +970,30 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_left();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             orientation = 3;
@@ -985,23 +1004,23 @@ void loop()
 
             if (orientation == 0)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 ninety_degrees_left();
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                Delay_nonBlocking(2000);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else
@@ -1022,4 +1041,18 @@ void clear_path_s()
     {
         s[i] = '\0';
     }
+}
+
+void printMap()
+{
+    for (int i = 0; i < ROW; i++)
+    {
+        for (int j = 0; j < COL; j++)
+        {
+            Serial.print(read_Map(Map, i, j));
+            Serial.print(" ");
+        }
+        Serial.println("");
+    }
+    Delay_nonBlocking(1000);
 }

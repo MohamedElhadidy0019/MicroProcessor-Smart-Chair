@@ -3,8 +3,10 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <NewPing.h> //library for ultrasonic sensor
+//#include <NewPing.h> //library for ultrasonic sensor
+#include "PID_motors.h"
 
+#define PI (float)3.141
 /* Sensors data : */
 //const byte TrigerPins [3] = {10,11,12};              /* index --> 0 : front, 1 :right, 2 : left */
 //const byte echos [3] = {7,8,9};                      /* index --> 0 : front, 1 :right, 2 : left */
@@ -33,12 +35,13 @@ double current_angle = 0;
 
 /* Motor */
 // ---------------- define pins -----------------
-#define enA 10
-#define in1 7
-#define in2 6
-#define enB 9
-#define in3 5
-#define in4 4
+// commented these pins as they are now in PID_motors.h file
+// #define enA 10
+// #define in1 7
+// #define in2 6
+// #define enB 9
+// #define in3 5
+// #define in4 4
 // ---------------- algorithm includes -----------------
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,12 +57,11 @@ double current_angle = 0;
 #define COL 20
 #define oo 250
 uint8_t Map[(int)((ROW * COL) / 8) + 5];
-Node src;
 #define FREE_MAP 1
 #define OBSTACLE_MAP 0
 // ---------------- array of directions  -----------------
 char s[200] = "";
-int orientation = 1;
+int orientation = 3;
 int i = 0;
 
 typedef struct node
@@ -69,104 +71,141 @@ typedef struct node
     //  4 free  2parent   10 x & y
     struct node *next;
 } Node;
+Node src, dest;
+
+#line 74 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Delay_nonBlocking(int wnated_in_millis);
+#line 82 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Transform(int dist, int sensorNumber);
+#line 141 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void calculate_Distance(int duration, int sensor_num);
+#line 154 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Read_ultrasonic();
+#line 167 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int getx(struct node n);
+#line 174 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int gety(struct node n);
+#line 181 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int get_x_parent(struct node n);
+#line 205 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int get_y_parent(struct node n);
+#line 231 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void set_xy(struct node *n, int x, int y);
+#line 237 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void set_xyp(struct node *n, int diff);
+#line 246 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+uint8_t read_Map(uint8_t *map, uint8_t index_y, uint8_t index_x);
+#line 257 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state);
+#line 274 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void forward_5cm();
+#line 296 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void ninety_degrees_left();
+#line 318 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void ninety_degrees_right();
+#line 347 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool isEmpty_s();
+#line 355 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool isFull();
+#line 363 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool peek_s(struct node *num);
+#line 374 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool pop_s(struct node *num);
+#line 389 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+bool push_s(struct node num);
+#line 402 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+Node* newNode(uint16_t data, uint8_t priority);
+#line 413 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void pop(Node **head);
+#line 420 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void push(Node **head, uint16_t data, uint8_t priority);
+#line 456 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+Node* peek(Node **head);
+#line 461 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isEmpty(Node **head);
+#line 467 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isValid(int row, int col);
+#line 472 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int compare(struct node node1, struct node node2);
+#line 479 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isUnBlocked(uint8_t *map, int row, int col);
+#line 484 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int isDestination(int row, int col, struct node dest);
+#line 492 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+int calculateHValue(int row, int col, struct node dest);
+#line 498 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void tracePath(struct node cellDetails[][20], Node dest, Node src);
+#line 573 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void aStarSearch(uint8_t *map, struct node src, struct node dest);
+#line 778 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void setup();
+#line 814 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void loop();
+#line 1019 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void clear_path_s();
+#line 74 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
+void Delay_nonBlocking(int wnated_in_millis)
+{
+    int theTime = millis();
+    while ((millis() - theTime) < wnated_in_millis)
+        ;
+}
 
 /* to transform the distance into x , y (for the map indexing) position based on the sensor number */
-#line 72 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void Transform(int dist, int sensorNumber);
-#line 104 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void calculate_Distance(int duration, int sensor_num);
-#line 116 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void Read_ultrasonic();
-#line 129 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int getx(struct node n);
-#line 136 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int gety(struct node n);
-#line 143 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int get_x_parent(struct node n);
-#line 167 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int get_y_parent(struct node n);
-#line 193 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void set_xy(struct node *n, int x, int y);
-#line 199 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void set_xyp(struct node *n, int diff);
-#line 208 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-uint8_t read_Map(uint8_t *map, uint8_t index_y, uint8_t index_x);
-#line 219 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state);
-#line 236 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void forward_5cm();
-#line 257 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void ninety_degrees_left();
-#line 279 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void ninety_degrees_right();
-#line 308 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-bool isEmpty_s();
-#line 316 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-bool isFull();
-#line 324 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-bool peek_s(struct node *num);
-#line 335 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-bool pop_s(struct node *num);
-#line 350 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-bool push_s(struct node num);
-#line 363 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-Node* newNode(uint16_t data, uint8_t priority);
-#line 374 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void pop(Node **head);
-#line 381 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void push(Node **head, uint16_t data, uint8_t priority);
-#line 417 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-Node* peek(Node **head);
-#line 422 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int isEmpty(Node **head);
-#line 428 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int isValid(int row, int col);
-#line 433 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int compare(struct node node1, struct node node2);
-#line 440 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int isUnBlocked(uint8_t *map, int row, int col);
-#line 445 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int isDestination(int row, int col, struct node dest);
-#line 453 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-int calculateHValue(int row, int col, struct node dest);
-#line 459 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void tracePath(struct node cellDetails[][20], Node dest, Node src);
-#line 534 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void aStarSearch(uint8_t *map, struct node src, struct node dest);
-#line 739 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void setup();
-#line 773 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void loop();
-#line 977 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
-void clear_path_s();
-#line 72 "e:\\zzArduino\\MicroProcessors\\MicroProcessor-Smart-Chair\\Team mapping and localization\\Integration\\Map\\Map.ino"
 void Transform(int dist, int sensorNumber)
 {
-    
+    //90 degree= PI/2
+    //180 degree = PI
+    switch (orientation)
+    {
+    case 0:
+        current_angle = -(PI / (float)2.0);
+        break;
+    case 1:
+        current_angle = PI;
+        break;
+    case 2:
+        current_angle = PI / (float)2.0;
+        break;
+    case 3:
+        current_angle = 0;
+        break;
+    default:
+        break;
+    }
+    x_position = getx(src);
+    y_position = gety(src);
     int x, y;
-    if (dist != -1)
+    if (dist != -1 || dist == 0)
     {
         switch (sensorNumber)
         {
         case 0: /* front */
-            x = x_position + dist * sin(current_angle);
-            y = y_position + dist * cos(current_angle);
+            x = x_position + dist * cos(current_angle);
+            y = y_position + dist * sin(current_angle * (float)-1.0);
             break;
 
         case 1: /* right */
-            x = x_position + dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle * -1);
+            x = x_position + dist * sin(current_angle * (float)-1.0);
+            y = y_position - dist * cos(current_angle);
             break;
 
         case 2: /* left */
 
-            x = x_position - dist * cos(current_angle);
-            y = y_position + dist * sin(current_angle);
+            x = x_position + dist * sin(current_angle);
+            y = y_position + dist * cos(current_angle);
             break;
         }
         /* if x or y are < 0 , then point is out of the rang of the map */
+
         if (!(x < 0 || y < 0))
+        {
+            Serial.print("Writing now at (x,y)=");
+            Serial.print(x);
+            Serial.print(",");
+            Serial.println(y);
             write_Map(Map, x, y, OBSTACLE_MAP);
+        }
     }
     return;
 }
@@ -178,7 +217,8 @@ void calculate_Distance(int duration, int sensor_num)
     distance = (duration * 0.0343) / 2.0;
     if (distance > 50)
     {
-        distance = -1; //readiung out of range
+        distance = -1; //reading out of range
+        return;
     }
     Transform((int)(distance / 5), sensor_num);
 }
@@ -307,69 +347,70 @@ void write_Map(uint8_t *map, uint8_t index_y, uint8_t index_x, uint8_t state) //
 void forward_5cm()
 {
     Serial.println("MOVING FORWARD NOW");
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    Move(5, 0);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, LOW);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, LOW);
 
-    analogWrite(enA, 60);
-    analogWrite(enB, 60);
+    // analogWrite(enA, 60);
+    // analogWrite(enB, 60);
 
-    delay(180);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // Delay_nonBlocking(180);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
+    RotateLeft();
+    // digitalWrite(in1, LOW);
+    // digitalWrite(in2, HIGH);
 
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, LOW);
 
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, LOW);
+    // analogWrite(enA, 80);
+    // analogWrite(enB, 80);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
-
-    delay(400);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // Delay_nonBlocking(400);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
 void ninety_degrees_right()
 {
     Serial.println("MOVING RIGHT NOW");
+    RotateRight();
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, LOW);
 
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, LOW);
+    // digitalWrite(in3, LOW);
+    // digitalWrite(in4, HIGH);
 
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, HIGH);
+    // analogWrite(enA, 80);
+    // analogWrite(enB, 80);
 
-    analogWrite(enA, 80);
-    analogWrite(enB, 80);
-
-    delay(350);
-    digitalWrite(in1, HIGH);
-    digitalWrite(in2, HIGH);
-    digitalWrite(in3, HIGH);
-    digitalWrite(in4, HIGH);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    // Delay_nonBlocking(350);
+    // digitalWrite(in1, HIGH);
+    // digitalWrite(in2, HIGH);
+    // digitalWrite(in3, HIGH);
+    // digitalWrite(in4, HIGH);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
 }
 
-bool x = 1;
+//bool x = 1;
 
 // ------------------- Stack Data structure -----------------
 const int MAX_SIZE = 90;
@@ -816,18 +857,20 @@ void setup()
     digitalWrite(TrigerPins, LOW);
     pinMode(echos, INPUT);
     // ---------------motor pins--------------
-    pinMode(enA, OUTPUT);
-    pinMode(enB, OUTPUT);
-    pinMode(in1, OUTPUT);
-    pinMode(in2, OUTPUT);
-    pinMode(in3, OUTPUT);
-    pinMode(in4, OUTPUT);
-    digitalWrite(in1, LOW);
-    digitalWrite(in2, LOW);
-    digitalWrite(in3, LOW);
-    digitalWrite(in4, LOW);
-    analogWrite(enA, 0);
-    analogWrite(enB, 0);
+    //in OID_motors.h file now
+    // pinMode(enA, OUTPUT);
+    // pinMode(enB, OUTPUT);
+    // pinMode(in1, OUTPUT);
+    // pinMode(in2, OUTPUT);
+    // pinMode(in3, OUTPUT);
+    // pinMode(in4, OUTPUT);
+    // digitalWrite(in1, LOW);
+    // digitalWrite(in2, LOW);
+    // digitalWrite(in3, LOW);
+    // digitalWrite(in4, LOW);
+    // analogWrite(enA, 0);
+    // analogWrite(enB, 0);
+    motors_setup(); //function to setup motors
     {
         for (uint8_t i = 0; i < ROW; i++)
         {
@@ -836,7 +879,7 @@ void setup()
                 write_Map(Map, i, j, FREE_MAP);
             }
         }
-        Serial.println("finished the MAAAAAP");
+        //Serial.println("finished the MAAAAAP");
     }
     set_xy(&src, 0, 0);
 }
@@ -844,23 +887,24 @@ void setup()
 void loop()
 {
     clear_path_s();
-    Serial.println("kak from the beginning");
-    if (x == 1 || 1)
-    {
-        // int reading = us.ping_cm(); //take reading for ultrasonic
-        // Serial.print("value of newping=");
-        // Serial.println(reading);
-        // //   delay(500);
-        //   Serial.println("Entered the loop");
-        Read_ultrasonic();
-        //delay(500);
-        //Serial.println("st loop ");
+    // read_Map(Map,0,3);
+    Serial.print("Value of(0,3) (y,x)=");
+    Serial.println(read_Map(Map, 0, 3));
 
-        //-------------------Write the map ----------------------------------
-        // 1 --> free & 0 --> block
+    // int reading = us.ping_cm(); //take reading for ultrasonic
+    // Serial.print("value of newping=");
+    // Serial.println(reading);
+    // //   Delay_nonBlocking(500);
+    //   Serial.println("Entered the loop");
+    Read_ultrasonic();
+    //Delay_nonBlocking(500);
+    //Serial.println("st loop ");
 
-        //Serial.println("end writing to map");
-        /*       write_Map(Map, 4, 3, 0);
+    //-------------------Write the map ----------------------------------
+    // 1 --> free & 0 --> block
+
+    //Serial.println("end writing to map");
+    /*       write_Map(Map, 4, 3, 0);
       write_Map(Map, 1, 1, 0);
       write_Map(Map, 3, 3, 0);
       write_Map(Map, 2, 3, 0);
@@ -870,186 +914,186 @@ void loop()
       write_Map(Map, 3, 6, 0);
       write_Map(Map, 4, 6, 0);
       write_Map(Map, 9, 0, 0); */
-        // int temp_now;
-        // Serial.print("distnace=");
-        // Serial.println(temp_now);
-        // Serial.println("READ DIST \n\n");
-        // ---------------------- Run  the algorithm  -----------------------
-        //Serial.println("define nodes ");
-        Node  dest;
-        
-        set_xy(&dest, 5, 5); //
-        Serial.print("Src --> \t");
-        Serial.print(getx(src));
-        Serial.print("   ,   ");
-        Serial.print(gety(src));
-        Serial.print("\n");
-        Serial.print("Dest--> \t");
-        Serial.print(getx(dest));
-        Serial.print("   ,   ");
-        Serial.print(gety(dest));
-        Serial.print("\n");
+    // int temp_now;
+    // Serial.print("distnace=");
+    // Serial.println(temp_now);
+    // Serial.println("READ DIST \n\n");
+    // ---------------------- Run  the algorithm  -----------------------
+    //Serial.println("define nodes ");
+    //Node dest;
 
-        aStarSearch(Map, src, dest);
-        // ---------------------- Print the path -----------------------
-        Serial.print("The path is -->  ");
-        for (int i = 0; i < strlen(s); i++)
-        {
-            Serial.print(s[i]);
-        }
-        x = 0;
-        Serial.println("\nDone \n");
-    }
-    else
+    set_xy(&dest, 5, 5); //
+    Serial.print("Src --> \t");
+    Serial.print(getx(src));
+    Serial.print("   ,   ");
+    Serial.print(gety(src));
+    Serial.print("\n");
+    Serial.print("Dest--> \t");
+    Serial.print(getx(dest));
+    Serial.print("   ,   ");
+    Serial.print(gety(dest));
+    Serial.print("\n");
+
+    aStarSearch(Map, src, dest);
+    // ---------------------- Print the path -----------------------
+    Serial.print("The path is -->  ");
+    for (int i = 0; i < strlen(s); i++)
     {
-        x = 0;
+        Serial.print(s[i]);
     }
+    Serial.println("\nDone \n");
+
     //0 -> right
-    // 1 ->up 
-    // 2 -> left 
-    // 3-> down 
-    
+    // 1 ->up
+    // 2 -> left
+    // 3-> down
+
     for (int i = 0; i < 1; i++)
     {
         Serial.println("LET's MOOOOVE ");
-        delay(500);
+        Delay_nonBlocking(500);
         if (s[i] == 'U')
         {
             if (orientation == 0)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_left();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             else
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
+
                 forward_5cm();
             }
             orientation = 1;
+            set_xy(&src, getx(src) - 1, gety(src));
         }
         else if (s[i] == 'R')
         {
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             orientation = 0;
+            set_xy(&src, getx(src), gety(src) + 1);
         }
         else if (s[i] == 'D')
         {
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             orientation = 3;
+            set_xy(&src, getx(src) + 1, gety(src));
         }
         else if (s[i] == 'L')
         {
 
             if (orientation == 0)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_right();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 1)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 ninety_degrees_left();
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else if (orientation == 2)
             {
-                delay(2000);
+                Delay_nonBlocking(2000);
                 forward_5cm();
             }
             else
             {
-                delay(100);
+                Delay_nonBlocking(100);
                 ninety_degrees_right();
-                delay(100);
+                Delay_nonBlocking(100);
                 forward_5cm();
             }
             orientation = 2;
+            set_xy(&src, getx(src), gety(src) - 1);
         }
     }
 }
 void clear_path_s()
 {
-    for(int i=0;i<200;i++)
+    for (int i = 0; i < 200; i++)
     {
-        s[i]='\0';
+        s[i] = '\0';
     }
 }
 
