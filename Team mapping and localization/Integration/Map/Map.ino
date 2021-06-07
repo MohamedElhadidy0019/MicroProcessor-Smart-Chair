@@ -82,23 +82,23 @@ void Transform(int dist, int sensorNumber)
 {
     //90 degree= PI/2
     //180 degree = PI
-    switch (orientation)
-    {
-    case 0:
-        current_angle = -(PI / (float)2.0);
-        break;
-    case 1:
-        current_angle = PI;
-        break;
-    case 2:
-        current_angle = PI / (float)2.0;
-        break;
-    case 3:
-        current_angle = 0;
-        break;
-    default:
-        break;
-    }
+    // switch (orientation)
+    // {
+    // case 0:
+    //     current_angle = -(PI / (float)2.0);
+    //     break;
+    // case 1:
+    //     current_angle = PI;
+    //     break;
+    // case 2:
+    //     current_angle = PI / (float)2.0;
+    //     break;
+    // case 3:
+    //     current_angle = 0;
+    //     break;
+    // default:
+    //     break;
+    // }
     x_position = getx(src);
     y_position = gety(src);
     int x, y;
@@ -108,17 +108,17 @@ void Transform(int dist, int sensorNumber)
     {
     case 0: /* front */
         x = x_position + dist * cos(current_angle);
-        y = y_position + dist * sin(current_angle * (float)-1.0);
+        y = y_position + dist * sin(current_angle);
         break;
 
     case 1: /* right */
-        x = x_position + dist * sin(current_angle * (float)-1.0);
+        x = x_position + dist * sin(current_angle);
         y = y_position - dist * cos(current_angle);
         break;
 
     case 2: /* left */
 
-        x = x_position + dist * sin(current_angle);
+        x = x_position + dist * sin(current_angle * (float)-1.0);
         y = y_position + dist * cos(current_angle);
         break;
     }
@@ -165,7 +165,7 @@ void Read_ultrasonic()
         duration += pulseIn(echos[current_sensor], HIGH);
         delayMicroseconds(10);
     }
-    duration=duration/10;
+    duration = duration / 10;
     calculate_Distance(duration, current_sensor);
     // Serial.print("distance=");
     // Serial.println(distance);
@@ -283,7 +283,7 @@ void write_Map(uint8_t *Map_local, uint8_t index_x, uint8_t index_y, uint8_t sta
 void forward_5cm()
 {
     Serial.println("MOVING FORWARD NOW");
-    Move(15, 0);
+    Move(5, 0);
     // digitalWrite(in1, HIGH);
     // digitalWrite(in2, LOW);
 
@@ -305,6 +305,7 @@ void forward_5cm()
 void ninety_degrees_left()
 {
     Serial.println("MOVING LEFT NOW");
+
     RotateLeft();
     // digitalWrite(IN1, LOW);
     // digitalWrite(IN2, HIGH);
@@ -590,8 +591,9 @@ void aStarSearch(uint8_t *map, struct node src, struct node dest)
     }
 
     // Either the source or the destination is blocked
-    if (isUnBlocked(map, getx(src), gety(src)) == 0 || isUnBlocked(map, getx(dest), gety(dest)) == 0)
+    if (isUnBlocked(map, getx(dest), gety(dest)) == 0)
     {
+        //isUnBlocked(map, getx(src), gety(src)) == 0 ||
         Serial.println("Source or the destination is blocked\n");
         return;
     }
@@ -830,6 +832,11 @@ void setup()
 //NewPing us(3, 4, 100);
 void loop()
 {
+    // while (!Serial.available())
+    // {
+    //     /* code */
+    // }
+    
     clear_path_s();
 
     //printMap();
@@ -873,8 +880,20 @@ void loop()
     // ---------------------- Run  the algorithm  -----------------------
     //Serial.println("define nodes ");
     //Node dest;
+    /*
+    -------------------------------------------------------Y
+        |
+    |
+    |
+    |
+    |
+    |
+    |
+    |
+        |  X
+*/
 
-    set_xy(&dest, 20, 20); //
+    set_xy(&dest, 5, 15); //
     Serial.print("Src --> \t");
     Serial.print(getx(src));
     Serial.print("   ,   ");
@@ -895,7 +914,7 @@ void loop()
     }
     Serial.println("\nDone \n");
 
-    //0 -> right
+    // 0 -> right
     // 1 ->up
     // 2 -> left
     // 3-> down
@@ -910,6 +929,7 @@ void loop()
             {
                 Delay_nonBlocking(50);
                 ninety_degrees_left();
+
                 Delay_nonBlocking(50);
                 forward_5cm();
             }
@@ -922,6 +942,7 @@ void loop()
             {
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
+
                 Delay_nonBlocking(50);
                 forward_5cm();
             }
@@ -936,6 +957,7 @@ void loop()
                 forward_5cm();
             }
             orientation = 1;
+            current_angle = PI;
             set_xy(&src, getx(src) - 1, gety(src));
         }
         else if (s[i] == 'R')
@@ -950,6 +972,7 @@ void loop()
             {
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
+
                 Delay_nonBlocking(50);
                 forward_5cm();
             }
@@ -960,15 +983,18 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else
             {
                 ninety_degrees_left();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             orientation = 0;
+            current_angle = -(PI / (float)2.0);
             set_xy(&src, getx(src), gety(src) + 1);
         }
         else if (s[i] == 'D')
@@ -978,6 +1004,7 @@ void loop()
             {
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
+
                 Delay_nonBlocking(50);
                 forward_5cm();
             }
@@ -988,6 +1015,7 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else if (orientation == 2)
@@ -995,14 +1023,17 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_left();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else
             {
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             orientation = 3;
+            current_angle = 0;
             set_xy(&src, getx(src) + 1, gety(src));
         }
         else if (s[i] == 'L')
@@ -1015,6 +1046,7 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else if (orientation == 1)
@@ -1022,11 +1054,13 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_left();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else if (orientation == 2)
             {
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             else
@@ -1034,12 +1068,16 @@ void loop()
                 Delay_nonBlocking(50);
                 ninety_degrees_right();
                 Delay_nonBlocking(50);
+
                 forward_5cm();
             }
             orientation = 2;
+            current_angle = (PI / (float)2.0);
             set_xy(&src, getx(src), gety(src) - 1);
         }
     }
+    printMap();
+    //Delay_nonBlocking(1000);
 }
 void clear_path_s()
 {

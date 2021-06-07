@@ -2,7 +2,7 @@
 
 
 const byte NUMSTEPS = 40;
-const int MOTOTSPEED = 90;//57
+const int MOTOTSPEED = 150;//57
 volatile long SpeedSensorCounter = 0;
 long PreviousSSCntTime = 0;
 int RPM;
