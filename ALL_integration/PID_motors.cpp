@@ -2,7 +2,7 @@
 
 
 const byte NUMSTEPS = 40;
-const int MOTOTSPEED = 90;//57
+const int MOTOTSPEED = 150;//57
 volatile long SpeedSensorCounter = 0;
 long PreviousSSCntTime = 0;
 int RPM;
@@ -210,8 +210,8 @@ digitalWrite(IN1, LOW);
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, HIGH);
 
-    analogWrite(ENA, 80);
-    analogWrite(ENB, 80);
+    analogWrite(ENA, MOTOTSPEED);
+    analogWrite(ENB, MOTOTSPEED);
 
     delay(180);
     digitalWrite(IN1, HIGH);
