@@ -51,21 +51,21 @@ void HandGesturesMove()
 {
   int r = RecieveData();
   if (r == 0) {
-    //Serial.println("recieved: move right");
+    Serial.println("recieved: move right");
     FreeRotate(RIGHT);    
   }
   else if (r == 1) {
-    //Serial.println("recieved: move left");
+    Serial.println("recieved: move left");
     //MoveLeft();          //uncomment this later when we know the name of the functions
     FreeRotate(LEFT);    
   }
   else if (r == 2) {
-    //Serial.println("recieved: move forward");
+    Serial.println("recieved: move forward");
     //MoveForward();          //uncomment this later when we know the name of the functions
     Move(3,0);
   }
   else if (r == 3) {
-    //Serial.println("recieved: move backward");
+    Serial.println("recieved: move backward");
     //MoveBackward();
     move_Backward();
     
