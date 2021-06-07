@@ -20,8 +20,8 @@
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
-#define CE_PIN   48
-#define CSN_PIN 49
+#define CE_PIN   23
+#define CSN_PIN 25
 
 
 void RadioSetup();
@@ -31,6 +31,6 @@ void HandGesturesMove();
 
 void setup_hangestures();
 
-void loop_handgestures();
+void loop_handgestures(char*);
 
 #endif

@@ -16,7 +16,7 @@
 */
 
 #include "handgestures_recSide.h"
-
+#include "PID_motors.h"
 
 
 const uint64_t pipe = 0x1;  // This is the transmit pipe
@@ -26,57 +26,75 @@ RF24 radio(CE_PIN, CSN_PIN);
 
 void RadioSetup()
 {
-    Serial.begin(9600);
-    delay(1000);
-    radio.begin();
-    radio.openReadingPipe(1, pipe);
-    radio.startListening();
+  
+  delay(1000);
+  radio.begin();
+  radio.openReadingPipe(1, pipe);
+  radio.startListening();
 }
 
 int RecieveData()
 {
-    if (radio.available())
+  if (radio.available())
+  {
+    bool done = false;
+    while (!done)
     {
-        bool done = false;
-        while (!done)
-        {
-            done = radio.read(sendData, sizeof(sendData));
-        }
-        return sendData[0];
+      done = radio.read(sendData, sizeof(sendData));
     }
-    return -10000;
+    return sendData[0];
+  }
+  return -10000;
 }
 
 void HandGesturesMove()
 {
-    int r = RecieveData();
-    if (r == 0) {
-        //Serial.println("recieved: move right");
-        //MoveRight();          //uncomment this later when we know the name of the functions
-    }
-    else if (r == 1) {
-        //Serial.println("recieved: move left");
-        //MoveLeft();          //uncomment this later when we know the name of the functions
-    }
-    else if (r == 2) {
-        //Serial.println("recieved: move forward");
-        //MoveForward();          //uncomment this later when we know the name of the functions
-    }
-    else if (r == 3) {
-        //Serial.println("recieved: move backward");
-        //MoveBackward();          //uncomment this later when we know the name of the functions
-    }
+  int r = RecieveData();
+  if (r == 0) {
+    //Serial.println("recieved: move right");
+    FreeRotate(RIGHT);    
+  }
+  else if (r == 1) {
+    //Serial.println("recieved: move left");
+    //MoveLeft();          //uncomment this later when we know the name of the functions
+    FreeRotate(LEFT);    
+  }
+  else if (r == 2) {
+    //Serial.println("recieved: move forward");
+    //MoveForward();          //uncomment this later when we know the name of the functions
+    Move(3,0);
+  }
+  else if (r == 3) {
+    //Serial.println("recieved: move backward");
+    //MoveBackward();
+    move_Backward();
+    
+  }
 
 }
 
 void setup_hangestures()
 {
-    RadioSetup();
+  RadioSetup();
+  motors_setup();
 }
 
-void loop_handgestures()
+void loop_handgestures(char * ptr_State)
 {
-    //if(Ser)
+  setup_hangestures();
+  while (true)
+  {
+    if (Serial.available())
+    {
+      *ptr_State = Serial.read();
+      if (*ptr_State != 'a')
+      {
+        //dis setup function
+        break;
+      }
+    }
     HandGesturesMove();
+  }
+
 
 }
