@@ -1,7 +1,7 @@
 #include "handgestures_recSide.h"
 
 char Code_State;
-// a   ->hand)gestur
+// h   ->hand)gestur
 // b
 // c
 //d
@@ -12,20 +12,28 @@ char Code_State;
 void setup()
 {
   Serial.begin(9600);
+  Serial1.begin(9600);
   //non blocking delay 100 ms
-  while (!Serial.available());
-  Code_State = Serial.read();
+  while (!Serial1.available());
+  Code_State = Serial1.read();
 
-
+  //Code_State='a';
 }
 
 
 void loop()
 {
+  if (Serial1.available())
+  {
+    Code_State = Serial1.read();
+  }
   switch (Code_State)
   {
-    case 'a':
+    case 'h':
       loop_handgestures(&Code_State);
+      break;
+    default :
+
       break;
   }
 

@@ -29,6 +29,7 @@ void RadioSetup()
   
   delay(1000);
   radio.begin();
+  
   radio.openReadingPipe(1, pipe);
   radio.startListening();
 }
@@ -84,12 +85,14 @@ void loop_handgestures(char * ptr_State)
   setup_hangestures();
   while (true)
   {
-    if (Serial.available())
+    if (Serial1.available())
     {
-      *ptr_State = Serial.read();
-      if (*ptr_State != 'a')
+      *ptr_State = Serial1.read();
+      if (*ptr_State != 'h')
       {
         //dis setup function
+         motors_unsetup();
+         
         break;
       }
     }

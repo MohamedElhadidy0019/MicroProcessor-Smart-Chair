@@ -18,7 +18,7 @@
 
 //need to call this function in the void setup() in the .ino file
 void motors_setup();
-
+void motors_unsetup();
 void setTarget_CM(double cm);
 
 void setTarget_Angle(int angle);

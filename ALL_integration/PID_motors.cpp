@@ -14,6 +14,15 @@ volatile int NumStepsMoved = 0;
 
 
 //need to call this function in the void setup() in the .ino file
+void motors_unsetup()
+{
+    analogWrite(ENA, 0); //map(target-OrderCounter,0,target,0,255));
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENB, 0); //map(target-OrderCounter,0,target,0,255));
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+}
 void motors_setup()
 {
     pinMode(SpeedSensorPin, INPUT_PULLUP);
